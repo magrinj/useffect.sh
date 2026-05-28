@@ -8,9 +8,19 @@ describe('Home', () => {
     expect(screen.getByText('useffect.sh')).toBeInTheDocument()
   })
 
-  it('renders the mounting and soon markers', () => {
+  it('renders the headline and tagline', () => {
     render(<Home />)
-    expect(screen.getByText('// mounting...')).toBeInTheDocument()
-    expect(screen.getByText('// soon')).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: 'React Native Expert on Demand',
+      }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', {
+        level: 2,
+        name: /we unfuck the fuck code/,
+      }),
+    ).toBeInTheDocument()
   })
 })
