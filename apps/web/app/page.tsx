@@ -28,6 +28,11 @@ const TEAM: CarouselItem[] = [
   { id: '005', name: 'Subject Echo', role: 'Designer' },
   { id: '006', name: 'Subject Foxtrot', role: 'Analyst' },
   { id: '007', name: 'Subject Golf', role: 'Operator' },
+  { id: '008', name: 'Subject Hotel', role: 'Cryptographer' },
+  { id: '009', name: 'Subject India', role: 'Sensor Lead' },
+  { id: '010', name: 'Subject Juliet', role: 'Signal Hunter' },
+  { id: '011', name: 'Subject Kilo', role: 'Field Medic' },
+  { id: '012', name: 'Subject Lima', role: 'Handler' },
 ]
 
 const HAND_CONNECTIONS: Array<[number, number]> = [
@@ -55,11 +60,11 @@ const HAND_CONNECTIONS: Array<[number, number]> = [
 ]
 
 // Centered rectangle (normalized 0..1) where the hand is allowed to drive the
-// carousel. Leaves 15% horizontal margins on each side.
+// carousel. Horizontal margins shrink to 0 below COMPACT_VIEWPORT_PX.
 const HITBOX_TOP = 0.15
 const HITBOX_BOTTOM = 0.7
-const HITBOX_LEFT = 0.15
-const HITBOX_RIGHT = 0.85
+const HITBOX_MARGIN_X = 0.15
+const COMPACT_VIEWPORT_PX = 1024
 
 // How much normalized hand-x movement equals one carousel step.
 // 0.25 of the frame width = 1 item → SCALE = 4.
@@ -79,6 +84,32 @@ const SNAP_VELOCITY = 1.3
 const SPRING_STIFFNESS = 180
 const SPRING_DAMPING = 24
 
+// Minimum bounding-box diagonal (normalized 0..1) for a hand to count — keeps
+// the carousel from reacting to background hands or distant people.
+const MIN_HAND_SIZE = 0.22
+
+type Landmark = { x: number; y: number; z?: number }
+
+function pickHand(landmarks: Landmark[][] | undefined): Landmark[] | null {
+  if (!landmarks || landmarks.length === 0) return null
+  let best: { hand: Landmark[]; size: number } | null = null
+  for (const hand of landmarks) {
+    let minX = 1
+    let maxX = 0
+    let minY = 1
+    let maxY = 0
+    for (const p of hand) {
+      if (p.x < minX) minX = p.x
+      if (p.x > maxX) maxX = p.x
+      if (p.y < minY) minY = p.y
+      if (p.y > maxY) maxY = p.y
+    }
+    const size = Math.hypot(maxX - minX, maxY - minY)
+    if (!best || size > best.size) best = { hand, size }
+  }
+  return best && best.size >= MIN_HAND_SIZE ? best.hand : null
+}
+
 type Mode = 'idle' | 'tracking' | 'inertia' | 'snap'
 type Sample = { x: number; t: number }
 type Engine = {
@@ -89,10 +120,21 @@ type Engine = {
   samples: Sample[]
   snapTarget: number
 }
+type Hitbox = { left: number; right: number; top: number; bottom: number }
 
-const MAX_INDEX = TEAM.length - 1
-const clamp = (v: number, min: number, max: number) =>
-  Math.max(min, Math.min(max, v))
+function computeHitbox(viewportWidth: number): Hitbox {
+  const margin = viewportWidth < COMPACT_VIEWPORT_PX ? 0 : HITBOX_MARGIN_X
+  return {
+    left: margin,
+    right: 1 - margin,
+    top: HITBOX_TOP,
+    bottom: HITBOX_BOTTOM,
+  }
+}
+
+const ITEM_COUNT = TEAM.length
+const modIndex = (p: number) =>
+  ((Math.round(p) % ITEM_COUNT) + ITEM_COUNT) % ITEM_COUNT
 
 export default function CinemaPage() {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -106,7 +148,20 @@ export default function CinemaPage() {
     snapTarget: 0,
   })
 
+  const hitboxRef = useRef<Hitbox>(
+    computeHitbox(typeof window === 'undefined' ? 1280 : window.innerWidth),
+  )
+
   const [position, setPosition] = useState(0)
+
+  useEffect(() => {
+    const update = () => {
+      hitboxRef.current = computeHitbox(window.innerWidth)
+    }
+    update()
+    window.addEventListener('resize', update)
+    return () => window.removeEventListener('resize', update)
+  }, [])
 
   // Animation loop drives inertia + spring snap. Tracking updates come from
   // handleResult and bypass this loop (they happen at the hand-tracking rate).
@@ -122,16 +177,8 @@ export default function CinemaPage() {
       if (s.mode === 'inertia') {
         s.position += s.velocity * dt
         s.velocity *= Math.exp(-FRICTION * dt)
-        if (s.position <= 0) {
-          s.position = 0
-          s.velocity = 0
-        }
-        if (s.position >= MAX_INDEX) {
-          s.position = MAX_INDEX
-          s.velocity = 0
-        }
         if (Math.abs(s.velocity) < SNAP_VELOCITY) {
-          s.snapTarget = clamp(Math.round(s.position), 0, MAX_INDEX)
+          s.snapTarget = Math.round(s.position)
           s.mode = 'snap'
         }
         setPosition(s.position)
@@ -148,7 +195,12 @@ export default function CinemaPage() {
           Math.abs(s.position - s.snapTarget) < 0.0015 &&
           Math.abs(s.velocity) < 0.04
         ) {
-          s.position = s.snapTarget
+          // Wrap once at rest to keep numbers bounded over many revolutions.
+          // Visually identical because the carousel transform is mod 360°.
+          const wrapped =
+            ((s.snapTarget % ITEM_COUNT) + ITEM_COUNT) % ITEM_COUNT
+          s.position = wrapped
+          s.snapTarget = wrapped
           s.velocity = 0
           s.mode = 'idle'
         }
@@ -161,8 +213,9 @@ export default function CinemaPage() {
 
   const handleResult = useCallback((result: HandLandmarkerResult) => {
     const s = engineRef.current
-    const hand = result.landmarks?.[0]
-    drawOverlay(canvasRef.current, result)
+    const hbox = hitboxRef.current
+    const hand = pickHand(result.landmarks)
+    drawOverlay(canvasRef.current, hand, hbox)
 
     if (!hand) {
       if (s.mode === 'tracking') releaseTracking(s)
@@ -176,10 +229,10 @@ export default function CinemaPage() {
     const handX = 1 - tip.x
     const handY = tip.y
     const inside =
-      handY >= HITBOX_TOP &&
-      handY <= HITBOX_BOTTOM &&
-      handX >= HITBOX_LEFT &&
-      handX <= HITBOX_RIGHT
+      handY >= hbox.top &&
+      handY <= hbox.bottom &&
+      handX >= hbox.left &&
+      handX <= hbox.right
 
     if (!inside) {
       if (s.mode === 'tracking') releaseTracking(s)
@@ -198,11 +251,7 @@ export default function CinemaPage() {
     s.samples.push({ x: handX, t: now })
     s.samples = s.samples.filter((p) => now - p.t <= VELOCITY_WINDOW_MS)
 
-    const next = clamp(
-      s.anchor.position - (handX - s.anchor.handX) * HAND_SCALE,
-      0,
-      MAX_INDEX,
-    )
+    const next = s.anchor.position - (handX - s.anchor.handX) * HAND_SCALE
     s.position = next
     setPosition(next)
   }, [])
@@ -231,7 +280,7 @@ export default function CinemaPage() {
         <span>useffect.sh / precog</span>
         <span>{statusLabel(status)}</span>
         <span>
-          {String(Math.round(position) + 1).padStart(2, '0')} /{' '}
+          {String(modIndex(position) + 1).padStart(2, '0')} /{' '}
           {String(TEAM.length).padStart(2, '0')}
         </span>
       </header>
@@ -276,18 +325,15 @@ function releaseTracking(s: Engine) {
   // Slow release: use the breakpoint to commit forward or snap back.
   const delta = s.position - s.anchor.position
   const base = Math.round(s.anchor.position)
-  const target =
-    Math.abs(delta) >= BREAKPOINT
-      ? clamp(base + Math.sign(delta), 0, MAX_INDEX)
-      : clamp(base, 0, MAX_INDEX)
-  s.snapTarget = target
+  s.snapTarget = Math.abs(delta) >= BREAKPOINT ? base + Math.sign(delta) : base
   s.velocity = velocity
   s.mode = 'snap'
 }
 
 function drawOverlay(
   canvas: HTMLCanvasElement | null,
-  result: HandLandmarkerResult,
+  hand: Landmark[] | null,
+  hbox: Hitbox,
 ) {
   if (!canvas) return
   const ctx = canvas.getContext('2d')
@@ -296,31 +342,26 @@ function drawOverlay(
   const h = canvas.height
   ctx.clearRect(0, 0, w, h)
 
-  // Highlight the hitbox when any hand's fingertip is inside it.
+  // Highlight the hitbox when the picked hand's fingertip is inside it.
   let active = false
-  if (result.landmarks) {
-    for (const hand of result.landmarks) {
-      const tip = hand[8]
-      if (!tip) continue
+  if (hand) {
+    const tip = hand[8]
+    if (tip) {
       const mirroredX = 1 - tip.x
-      if (
-        tip.y >= HITBOX_TOP &&
-        tip.y <= HITBOX_BOTTOM &&
-        mirroredX >= HITBOX_LEFT &&
-        mirroredX <= HITBOX_RIGHT
-      ) {
-        active = true
-        break
-      }
+      active =
+        tip.y >= hbox.top &&
+        tip.y <= hbox.bottom &&
+        mirroredX >= hbox.left &&
+        mirroredX <= hbox.right
     }
   }
 
   // Hitbox is symmetric around the horizontal center, so raw and mirrored x
-  // coincide — we can draw directly with HITBOX_LEFT/RIGHT.
-  const x1 = HITBOX_LEFT * w
-  const x2 = HITBOX_RIGHT * w
-  const y1 = HITBOX_TOP * h
-  const y2 = HITBOX_BOTTOM * h
+  // coincide — we can draw directly with hbox.left/right.
+  const x1 = hbox.left * w
+  const x2 = hbox.right * w
+  const y1 = hbox.top * h
+  const y2 = hbox.bottom * h
   ctx.fillStyle = active
     ? 'rgba(34, 211, 238, 0.10)'
     : 'rgba(34, 211, 238, 0.04)'
@@ -335,40 +376,38 @@ function drawOverlay(
   ctx.strokeRect(x1, y1, x2 - x1, y2 - y1)
   ctx.restore()
 
-  if (!result.landmarks) return
+  if (!hand) return
 
-  for (const hand of result.landmarks) {
-    ctx.strokeStyle = 'rgba(34, 211, 238, 0.85)'
-    ctx.lineWidth = 3
-    ctx.shadowColor = 'rgba(34, 211, 238, 0.9)'
-    ctx.shadowBlur = 8
+  ctx.strokeStyle = 'rgba(34, 211, 238, 0.85)'
+  ctx.lineWidth = 3
+  ctx.shadowColor = 'rgba(34, 211, 238, 0.9)'
+  ctx.shadowBlur = 8
 
-    for (const [a, b] of HAND_CONNECTIONS) {
-      const pa = hand[a]
-      const pb = hand[b]
-      if (!pa || !pb) continue
-      ctx.beginPath()
-      ctx.moveTo(pa.x * w, pa.y * h)
-      ctx.lineTo(pb.x * w, pb.y * h)
-      ctx.stroke()
-    }
-
-    ctx.fillStyle = 'rgba(165, 243, 252, 0.95)'
-    for (const p of hand) {
-      ctx.beginPath()
-      ctx.arc(p.x * w, p.y * h, 4, 0, Math.PI * 2)
-      ctx.fill()
-    }
-
-    const tip = hand[8]
-    if (tip) {
-      ctx.beginPath()
-      ctx.arc(tip.x * w, tip.y * h, 14, 0, Math.PI * 2)
-      ctx.strokeStyle = 'rgba(34, 211, 238, 1)'
-      ctx.lineWidth = 2
-      ctx.stroke()
-    }
-
-    ctx.shadowBlur = 0
+  for (const [a, b] of HAND_CONNECTIONS) {
+    const pa = hand[a]
+    const pb = hand[b]
+    if (!pa || !pb) continue
+    ctx.beginPath()
+    ctx.moveTo(pa.x * w, pa.y * h)
+    ctx.lineTo(pb.x * w, pb.y * h)
+    ctx.stroke()
   }
+
+  ctx.fillStyle = 'rgba(165, 243, 252, 0.95)'
+  for (const p of hand) {
+    ctx.beginPath()
+    ctx.arc(p.x * w, p.y * h, 4, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  const tip = hand[8]
+  if (tip) {
+    ctx.beginPath()
+    ctx.arc(tip.x * w, tip.y * h, 14, 0, Math.PI * 2)
+    ctx.strokeStyle = 'rgba(34, 211, 238, 1)'
+    ctx.lineWidth = 2
+    ctx.stroke()
+  }
+
+  ctx.shadowBlur = 0
 }

@@ -37,34 +37,55 @@ export function useHandTracking(
     let stream: MediaStream | null = null
     let rafId = 0
     let lastVideoTime = -1
+    let starting = false
 
-    async function boot() {
+    const isPageActive = () => !document.hidden && document.hasFocus()
+
+    async function ensureLandmarker() {
+      if (landmarker) return landmarker
+      const fileset = await FilesetResolver.forVisionTasks(WASM_BASE)
+      landmarker = await HandLandmarker.createFromOptions(fileset, {
+        baseOptions: { modelAssetPath: MODEL_URL, delegate: 'GPU' },
+        numHands: 2,
+        runningMode: 'VIDEO',
+        minHandDetectionConfidence: 0.5,
+        minHandPresenceConfidence: 0.5,
+        minTrackingConfidence: 0.5,
+      })
+      return landmarker
+    }
+
+    async function start() {
+      if (cancelled || starting || stream) return
+      starting = true
       setState((s) => ({ ...s, status: 'loading' }))
       try {
-        const fileset = await FilesetResolver.forVisionTasks(WASM_BASE)
-        landmarker = await HandLandmarker.createFromOptions(fileset, {
-          baseOptions: { modelAssetPath: MODEL_URL, delegate: 'GPU' },
-          numHands: 2,
-          runningMode: 'VIDEO',
-          minHandDetectionConfidence: 0.5,
-          minHandPresenceConfidence: 0.5,
-          minTrackingConfidence: 0.5,
-        })
-
-        stream = await navigator.mediaDevices.getUserMedia({
+        await ensureLandmarker()
+        if (cancelled || !isPageActive()) return
+        const localStream = await navigator.mediaDevices.getUserMedia({
           video: { width: 1280, height: 720, facingMode: 'user' },
           audio: false,
         })
-
+        // Bail out if visibility/focus flipped while we were awaiting media.
+        if (cancelled || !isPageActive()) {
+          for (const track of localStream.getTracks()) track.stop()
+          return
+        }
+        stream = localStream
         const video = videoRef.current
-        if (!video || cancelled) return
+        if (!video) {
+          for (const track of stream.getTracks()) track.stop()
+          stream = null
+          return
+        }
         video.srcObject = stream
         await video.play()
 
         setState({ status: 'ready', error: null, result: null })
+        lastVideoTime = -1
 
         const loop = () => {
-          if (cancelled || !landmarker || !video) return
+          if (cancelled || !landmarker || !stream || !video) return
           if (video.currentTime !== lastVideoTime && video.readyState >= 2) {
             lastVideoTime = video.currentTime
             const result = landmarker.detectForVideo(video, performance.now())
@@ -81,16 +102,52 @@ export function useHandTracking(
           error: err instanceof Error ? err.message : String(err),
           result: null,
         })
+      } finally {
+        starting = false
       }
     }
 
-    boot()
+    function stop() {
+      if (rafId) {
+        cancelAnimationFrame(rafId)
+        rafId = 0
+      }
+      const video = videoRef.current
+      if (video) {
+        video.pause()
+        video.srcObject = null
+      }
+      if (stream) {
+        for (const track of stream.getTracks()) track.stop()
+        stream = null
+      }
+      lastVideoTime = -1
+    }
+
+    const sync = () => {
+      if (cancelled) return
+      if (isPageActive()) {
+        start()
+      } else if (stream || rafId) {
+        stop()
+        setState((s) => ({ ...s, status: 'idle', result: null }))
+      }
+    }
+
+    document.addEventListener('visibilitychange', sync)
+    window.addEventListener('focus', sync)
+    window.addEventListener('blur', sync)
+
+    sync()
 
     return () => {
       cancelled = true
-      cancelAnimationFrame(rafId)
+      document.removeEventListener('visibilitychange', sync)
+      window.removeEventListener('focus', sync)
+      window.removeEventListener('blur', sync)
+      stop()
       landmarker?.close()
-      for (const track of stream?.getTracks() ?? []) track.stop()
+      landmarker = null
     }
   }, [videoRef])
 

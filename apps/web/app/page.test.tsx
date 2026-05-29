@@ -11,6 +11,6 @@ describe('Home', () => {
   it('renders the precog header and carousel counter', () => {
     render(<Home />)
     expect(screen.getByText('useffect.sh / precog')).toBeInTheDocument()
-    expect(screen.getByText(/01 \/ 07/)).toBeInTheDocument()
+    expect(screen.getByText(/01 \/ 12/)).toBeInTheDocument()
   })
 })
