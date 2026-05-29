@@ -1,26 +1,16 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+
+vi.mock('./use-hand-tracking', () => ({
+  useHandTracking: () => ({ status: 'idle', error: null, result: null }),
+}))
+
 import Home from './page'
 
 describe('Home', () => {
-  it('renders the brand name', () => {
+  it('renders the precog header and carousel counter', () => {
     render(<Home />)
-    expect(screen.getByText('useffect.sh')).toBeInTheDocument()
-  })
-
-  it('renders the headline and tagline', () => {
-    render(<Home />)
-    expect(
-      screen.getByRole('heading', {
-        level: 1,
-        name: 'React Native Expert on Demand',
-      }),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('heading', {
-        level: 2,
-        name: /we unfuck the fuck code/,
-      }),
-    ).toBeInTheDocument()
+    expect(screen.getByText('useffect.sh / precog')).toBeInTheDocument()
+    expect(screen.getByText(/01 \/ 07/)).toBeInTheDocument()
   })
 })
