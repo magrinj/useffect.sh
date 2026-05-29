@@ -8,33 +8,34 @@ export type CarouselItem = {
 
 type Props = {
   items: CarouselItem[]
-  index: number
+  position: number
 }
 
-export function Carousel({ items, index }: Props) {
+export function Carousel({ items, position }: Props) {
+  const activeIndex = Math.round(position)
   return (
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center [perspective:1400px]">
       <div className="relative h-[420px] w-full max-w-6xl [transform-style:preserve-3d]">
         {items.map((item, i) => {
-          const offset = i - index
+          const offset = i - position
           const abs = Math.abs(offset)
           const translateX = offset * 280
           const translateZ = -abs * 220
           const rotateY = offset * -22
-          const opacity = abs > 3 ? 0 : 1 - abs * 0.18
-          const zIndex = 100 - abs
+          const opacity = abs > 3.5 ? 0 : Math.max(0, 1 - abs * 0.18)
+          const zIndex = 100 - Math.round(abs)
 
           return (
             <div
               key={item.id}
-              className="absolute left-1/2 top-1/2 h-[400px] w-[280px] -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-out"
+              className="absolute left-1/2 top-1/2 h-[400px] w-[280px] -translate-x-1/2 -translate-y-1/2"
               style={{
                 transform: `translate3d(calc(-50% + ${translateX}px), -50%, ${translateZ}px) rotateY(${rotateY}deg)`,
                 opacity,
                 zIndex,
               }}
             >
-              <Portrait item={item} active={offset === 0} />
+              <Portrait item={item} active={i === activeIndex} />
             </div>
           )
         })}
@@ -53,7 +54,7 @@ function Portrait({ item, active }: { item: CarouselItem; active: boolean }) {
 
   return (
     <div
-      className={`relative h-full w-full overflow-hidden rounded-lg border backdrop-blur-sm transition-all ${
+      className={`relative h-full w-full overflow-hidden rounded-lg border backdrop-blur-sm transition-colors ${
         active
           ? 'border-cyan-300/80 shadow-[0_0_60px_rgba(34,211,238,0.4)]'
           : 'border-cyan-400/20'

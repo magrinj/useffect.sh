@@ -39,39 +39,160 @@ const HAND_CONNECTIONS: Array<[number, number]> = [
   [0, 17],
 ]
 
-const SWIPE_THRESHOLD = 0.22 // normalized screen units (~22% width)
-const SWIPE_WINDOW_MS = 400
-const SWIPE_COOLDOWN_MS = 700
+// Centered rectangle (normalized 0..1) where the hand is allowed to drive the
+// carousel. Leaves 15% horizontal margins on each side.
+const HITBOX_TOP = 0.15
+const HITBOX_BOTTOM = 0.7
+const HITBOX_LEFT = 0.15
+const HITBOX_RIGHT = 0.85
 
+// How much normalized hand-x movement equals one carousel step.
+// 0.25 of the frame width = 1 item → SCALE = 4.
+const HAND_SCALE = 4
+
+// Fraction of an item the user must drag past to commit when released slowly.
+const BREAKPOINT = 0.32
+
+// Window used to compute release velocity from recent samples.
+const VELOCITY_WINDOW_MS = 120
+
+// Inertia decay rate (1/s) — higher means a faster stop.
+const FRICTION = 3
+// Below this velocity (items/s) we switch from inertia to the snap spring.
+const SNAP_VELOCITY = 1.3
+// Underdamped spring for snapping to the nearest integer slot.
+const SPRING_STIFFNESS = 180
+const SPRING_DAMPING = 24
+
+type Mode = 'idle' | 'tracking' | 'inertia' | 'snap'
 type Sample = { x: number; t: number }
+type Engine = {
+  mode: Mode
+  position: number
+  velocity: number
+  anchor: { handX: number; position: number }
+  samples: Sample[]
+  snapTarget: number
+}
+
+const MAX_INDEX = TEAM.length - 1
+const clamp = (v: number, min: number, max: number) =>
+  Math.max(min, Math.min(max, v))
 
 export default function CinemaPage() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const samplesRef = useRef<Sample[]>([])
-  const lastSwipeRef = useRef(0)
+  const engineRef = useRef<Engine>({
+    mode: 'idle',
+    position: 0,
+    velocity: 0,
+    anchor: { handX: 0, position: 0 },
+    samples: [],
+    snapTarget: 0,
+  })
 
-  const [index, setIndex] = useState(0)
-  const [lastGesture, setLastGesture] = useState<'left' | 'right' | null>(null)
+  const [position, setPosition] = useState(0)
+
+  // Animation loop drives inertia + spring snap. Tracking updates come from
+  // handleResult and bypass this loop (they happen at the hand-tracking rate).
+  useEffect(() => {
+    let raf = 0
+    let last = performance.now()
+    const tick = (now: number) => {
+      raf = requestAnimationFrame(tick)
+      const dt = Math.min(0.04, (now - last) / 1000)
+      last = now
+      const s = engineRef.current
+
+      if (s.mode === 'inertia') {
+        s.position += s.velocity * dt
+        s.velocity *= Math.exp(-FRICTION * dt)
+        if (s.position <= 0) {
+          s.position = 0
+          s.velocity = 0
+        }
+        if (s.position >= MAX_INDEX) {
+          s.position = MAX_INDEX
+          s.velocity = 0
+        }
+        if (Math.abs(s.velocity) < SNAP_VELOCITY) {
+          s.snapTarget = clamp(Math.round(s.position), 0, MAX_INDEX)
+          s.mode = 'snap'
+        }
+        setPosition(s.position)
+        return
+      }
+
+      if (s.mode === 'snap') {
+        const acc =
+          -SPRING_STIFFNESS * (s.position - s.snapTarget) -
+          SPRING_DAMPING * s.velocity
+        s.velocity += acc * dt
+        s.position += s.velocity * dt
+        if (
+          Math.abs(s.position - s.snapTarget) < 0.0015 &&
+          Math.abs(s.velocity) < 0.04
+        ) {
+          s.position = s.snapTarget
+          s.velocity = 0
+          s.mode = 'idle'
+        }
+        setPosition(s.position)
+      }
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [])
 
   const handleResult = useCallback((result: HandLandmarkerResult) => {
+    const s = engineRef.current
+    const hand = result.landmarks?.[0]
     drawOverlay(canvasRef.current, result)
-    detectSwipe(result, samplesRef, lastSwipeRef, (dir) => {
-      setLastGesture(dir)
-      setIndex((i) => {
-        if (dir === 'right') return Math.min(TEAM.length - 1, i + 1)
-        return Math.max(0, i - 1)
-      })
-    })
+
+    if (!hand) {
+      if (s.mode === 'tracking') releaseTracking(s)
+      return
+    }
+
+    const tip = hand[8]
+    if (!tip) return
+
+    // Video is mirrored: hand-right movement should move the carousel forward.
+    const handX = 1 - tip.x
+    const handY = tip.y
+    const inside =
+      handY >= HITBOX_TOP &&
+      handY <= HITBOX_BOTTOM &&
+      handX >= HITBOX_LEFT &&
+      handX <= HITBOX_RIGHT
+
+    if (!inside) {
+      if (s.mode === 'tracking') releaseTracking(s)
+      return
+    }
+
+    const now = performance.now()
+    if (s.mode !== 'tracking') {
+      s.mode = 'tracking'
+      s.velocity = 0
+      s.anchor = { handX, position: s.position }
+      s.samples = [{ x: handX, t: now }]
+      return
+    }
+
+    s.samples.push({ x: handX, t: now })
+    s.samples = s.samples.filter((p) => now - p.t <= VELOCITY_WINDOW_MS)
+
+    const next = clamp(
+      s.anchor.position - (handX - s.anchor.handX) * HAND_SCALE,
+      0,
+      MAX_INDEX,
+    )
+    s.position = next
+    setPosition(next)
   }, [])
 
   const { status, error } = useHandTracking(videoRef, handleResult)
-
-  useEffect(() => {
-    if (!lastGesture) return
-    const t = setTimeout(() => setLastGesture(null), 600)
-    return () => clearTimeout(t)
-  }, [lastGesture])
 
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-black text-cyan-100">
@@ -95,20 +216,15 @@ export default function CinemaPage() {
         <span>useffect.sh / precog</span>
         <span>{statusLabel(status)}</span>
         <span>
-          {String(index + 1).padStart(2, '0')} /{' '}
+          {String(Math.round(position) + 1).padStart(2, '0')} /{' '}
           {String(TEAM.length).padStart(2, '0')}
         </span>
       </header>
 
-      <Carousel items={TEAM} index={index} />
+      <Carousel items={TEAM} position={position} />
 
       <footer className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center gap-2 pb-10 font-mono text-[11px] uppercase tracking-[0.25em] text-cyan-300/60">
-        <p>swipe your hand left or right to scrub</p>
-        {lastGesture && (
-          <p className="text-cyan-200">
-            {lastGesture === 'right' ? '→ next' : '← prev'}
-          </p>
-        )}
+        <p>swipe through the cyan band to scrub</p>
         {error && <p className="text-red-400">{error}</p>}
       </footer>
     </main>
@@ -122,43 +238,36 @@ function statusLabel(status: string) {
   return 'standby'
 }
 
-function detectSwipe(
-  result: HandLandmarkerResult,
-  samplesRef: React.RefObject<Sample[]>,
-  lastSwipeRef: React.RefObject<number>,
-  fire: (dir: 'left' | 'right') => void,
-) {
-  const hand = result.landmarks?.[0]
-  if (!hand) {
-    samplesRef.current = []
+function releaseTracking(s: Engine) {
+  let velocity = 0
+  if (s.samples.length >= 2) {
+    const first = s.samples[0]
+    const last = s.samples[s.samples.length - 1]
+    if (first && last) {
+      const dt = (last.t - first.t) / 1000
+      if (dt > 0) {
+        velocity = -((last.x - first.x) * HAND_SCALE) / dt
+      }
+    }
+  }
+  s.samples = []
+
+  if (Math.abs(velocity) > SNAP_VELOCITY) {
+    s.mode = 'inertia'
+    s.velocity = velocity
     return
   }
-  const indexTip = hand[8]
-  if (!indexTip) return
 
-  const now = performance.now()
-  // visualX: mirror the raw x so "right hand movement" maps to "right swipe" on screen
-  const visualX = 1 - indexTip.x
-
-  samplesRef.current.push({ x: visualX, t: now })
-  samplesRef.current = samplesRef.current.filter(
-    (s) => now - s.t <= SWIPE_WINDOW_MS,
-  )
-
-  if (now - lastSwipeRef.current < SWIPE_COOLDOWN_MS) return
-  const samples = samplesRef.current
-  if (samples.length < 4) return
-
-  const first = samples[0]
-  const last = samples[samples.length - 1]
-  if (!first || !last) return
-  const dx = last.x - first.x
-
-  if (Math.abs(dx) >= SWIPE_THRESHOLD) {
-    lastSwipeRef.current = now
-    samplesRef.current = []
-    fire(dx > 0 ? 'right' : 'left')
-  }
+  // Slow release: use the breakpoint to commit forward or snap back.
+  const delta = s.position - s.anchor.position
+  const base = Math.round(s.anchor.position)
+  const target =
+    Math.abs(delta) >= BREAKPOINT
+      ? clamp(base + Math.sign(delta), 0, MAX_INDEX)
+      : clamp(base, 0, MAX_INDEX)
+  s.snapTarget = target
+  s.velocity = velocity
+  s.mode = 'snap'
 }
 
 function drawOverlay(
@@ -171,6 +280,45 @@ function drawOverlay(
   const w = canvas.width
   const h = canvas.height
   ctx.clearRect(0, 0, w, h)
+
+  // Highlight the hitbox when any hand's fingertip is inside it.
+  let active = false
+  if (result.landmarks) {
+    for (const hand of result.landmarks) {
+      const tip = hand[8]
+      if (!tip) continue
+      const mirroredX = 1 - tip.x
+      if (
+        tip.y >= HITBOX_TOP &&
+        tip.y <= HITBOX_BOTTOM &&
+        mirroredX >= HITBOX_LEFT &&
+        mirroredX <= HITBOX_RIGHT
+      ) {
+        active = true
+        break
+      }
+    }
+  }
+
+  // Hitbox is symmetric around the horizontal center, so raw and mirrored x
+  // coincide — we can draw directly with HITBOX_LEFT/RIGHT.
+  const x1 = HITBOX_LEFT * w
+  const x2 = HITBOX_RIGHT * w
+  const y1 = HITBOX_TOP * h
+  const y2 = HITBOX_BOTTOM * h
+  ctx.fillStyle = active
+    ? 'rgba(34, 211, 238, 0.10)'
+    : 'rgba(34, 211, 238, 0.04)'
+  ctx.fillRect(x1, y1, x2 - x1, y2 - y1)
+
+  ctx.save()
+  ctx.strokeStyle = active
+    ? 'rgba(34, 211, 238, 0.9)'
+    : 'rgba(34, 211, 238, 0.35)'
+  ctx.lineWidth = active ? 3 : 2
+  ctx.setLineDash([14, 10])
+  ctx.strokeRect(x1, y1, x2 - x1, y2 - y1)
+  ctx.restore()
 
   if (!result.landmarks) return
 
