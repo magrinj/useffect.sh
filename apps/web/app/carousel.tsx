@@ -84,12 +84,14 @@ function Portrait({ item, active }: { item: CarouselItem; active: boolean }) {
         </div>
       )}
 
-      <div className="absolute inset-x-0 bottom-0 border-t border-cyan-300/30 bg-black/40 p-4">
-        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-cyan-300/70">
-          {item.role}
-        </p>
-        <p className="mt-1 font-mono text-sm text-cyan-50">{item.name}</p>
-      </div>
+      {!item.image && (
+        <div className="absolute inset-x-0 bottom-0 border-t border-cyan-300/30 bg-black/40 p-4">
+          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-cyan-300/70">
+            {item.role}
+          </p>
+          <p className="mt-1 font-mono text-sm text-cyan-50">{item.name}</p>
+        </div>
+      )}
 
       <div className="absolute left-2 top-2 font-mono text-[10px] text-cyan-300/60">
         ID://{item.id}

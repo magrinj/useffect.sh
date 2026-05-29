@@ -12,7 +12,12 @@ const TEAM: CarouselItem[] = [
     role: 'Native Engineer',
     image: '/david.png',
   },
-  { id: '002', name: 'Subject Bravo', role: 'Architect' },
+  {
+    id: '002',
+    name: 'Pablo Giraud-Carrier',
+    role: 'Architect',
+    image: '/pablo.png',
+  },
   { id: '003', name: 'Subject Charlie', role: 'Native Engineer' },
   { id: '004', name: 'Subject Delta', role: 'Strategist' },
   { id: '005', name: 'Subject Echo', role: 'Designer' },
