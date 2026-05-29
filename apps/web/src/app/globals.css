@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+/* ---------- Design tokens (from design/useffect.sh.html :root) ---------- */
+@theme inline {
+  --color-bg: #fafaf7;
+  --color-bg-2: #f2f0e9;
+  --color-ink: #0e0e0c;
+  --color-ink-2: #1a1a17;
+  --color-muted: #6b6b66;
+  --color-muted-2: #9a9a93;
+  --color-line: #e6e4dd;
+  --color-line-strong: #d6d3c9;
+  --color-accent: #00c853;
+  --color-accent-ink: #003d19;
+  --color-dark: #0b0b0a;
+  --color-dark-2: #131311;
+  --color-dark-line: #232320;
+  --color-dark-muted: #8a8a82;
+  --color-warn: #e5484d;
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --animate-blink: blink 1.05s steps(1) infinite;
+  --animate-pulse-dot: pulse-dot 2.4s ease-in-out infinite;
+}
+
+/* ---------- Custom block #1: keyframes referenced by @theme animations ---------- */
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* ---------- Custom block #2: terminal syntax token colors ---------- */
+/* Used inside <CodeBlock> — colored spans for code highlighting. */
+.tok-c {
+  color: var(--color-muted);
+} /* comment */
+.tok-k {
+  color: var(--color-ink);
+  font-weight: 500;
+} /* keyword */
+.tok-fn {
+  color: var(--color-ink);
+  font-weight: 600;
+} /* function name */
+.tok-p {
+  color: var(--color-muted-2);
+} /* punctuation */
+.tok-s {
+  color: var(--color-accent-ink);
+} /* string */
+.tok-us {
+  color: var(--color-accent);
+  font-weight: 600;
+} /* the literal "us" highlight */
+
+/* Dark-variant overrides: keywords/punctuation/comments need lighter colors. */
+[data-variant="dark"] .tok-k {
+  color: var(--color-bg);
+}
+[data-variant="dark"] .tok-fn {
+  color: var(--color-bg);
+}
+[data-variant="dark"] .tok-p {
+  color: var(--color-dark-muted);
+}
+[data-variant="dark"] .tok-c {
+  color: var(--color-dark-muted);
+}
+/* .tok-s (accent-ink, dark green) and .tok-us (accent, bright green)
+   remain legible on both light and dark backgrounds — no override needed. */
+
+/* ---------- Custom block #3: hero "strike" effect on the word FUCK ---------- */
+/* Crosses out the inner .word with an angled line. */
+.strike {
+  position: relative;
+  display: inline-block;
+}
+.strike .word {
+  color: var(--color-muted);
+}
+.strike::after {
+  content: "";
+  position: absolute;
+  left: -4%;
+  right: -4%;
+  top: 52%;
+  height: 0.08em;
+  background: currentColor;
+  transform: rotate(-3deg);
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: prefers-reduced-motion requires !important to override inline styles and high-specificity rules */
+    animation-duration: 0.001ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: prefers-reduced-motion requires !important to override inline styles and high-specificity rules */
+    animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: prefers-reduced-motion requires !important to override inline styles and high-specificity rules */
+    transition-duration: 0.001ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: prefers-reduced-motion requires !important to override inline styles and high-specificity rules */
+    scroll-behavior: auto !important;
+  }
+}

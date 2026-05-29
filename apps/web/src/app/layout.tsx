@@ -1,7 +1,8 @@
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono, Playfair_Display } from 'next/font/google'
+import { Geist, Geist_Mono } from 'next/font/google'
+import { ConsoleEgg } from '@/components/console-egg.client'
 import './globals.css'
 
 const geistSans = Geist({
@@ -14,12 +15,7 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 })
 
-const playfair = Playfair_Display({
-  variable: '--font-playfair',
-  subsets: ['latin'],
-})
-
-const title = 'useffect.sh — The React Native team you wish you had.'
+const title = 'useffect.sh — React Native Expert on Demand'
 const description =
   'A senior React Native collective. Series A/B startups only.'
 
@@ -49,11 +45,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} font-sans antialiased bg-white text-neutral-950`}
+        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased bg-bg text-ink`}
       >
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:bg-ink focus:px-4 focus:py-2 focus:font-mono focus:text-[13px] focus:text-bg focus:outline-none focus:ring-2 focus:ring-accent"
+        >
+          Skip to content
+        </a>
         {children}
         <Analytics />
         <SpeedInsights />
+        <ConsoleEgg />
       </body>
     </html>
   )

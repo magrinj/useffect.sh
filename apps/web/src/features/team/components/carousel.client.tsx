@@ -88,12 +88,12 @@ function Portrait({ item, active }: { item: CarouselItem; active: boolean }) {
     <div
       className={`relative h-full w-full overflow-hidden rounded-lg border backdrop-blur-sm transition-colors ${
         active
-          ? 'border-cyan-300/80 shadow-[0_0_60px_rgba(34,211,238,0.4)]'
-          : 'border-cyan-400/20'
+          ? 'border-accent shadow-[0_0_60px_rgba(0,200,83,0.4)]'
+          : 'border-dark-line'
       }`}
       style={{
         background:
-          'linear-gradient(135deg, rgba(8,47,73,0.6) 0%, rgba(15,23,42,0.8) 100%)',
+          'linear-gradient(135deg, rgba(11,11,10,0.6) 0%, rgba(19,19,17,0.85) 100%)',
       }}
     >
       {item.image ? (
@@ -108,7 +108,7 @@ function Portrait({ item, active }: { item: CarouselItem; active: boolean }) {
       ) : (
         <div className="flex h-full w-full items-center justify-center">
           <span
-            className="font-mono font-light tracking-wider text-cyan-100/90"
+            className="font-mono font-light tracking-wider text-bg"
             style={{ fontSize: 'clamp(40px, 12vmin, 72px)' }}
           >
             {initials}
@@ -117,18 +117,18 @@ function Portrait({ item, active }: { item: CarouselItem; active: boolean }) {
       )}
 
       {!item.image && (
-        <div className="absolute inset-x-0 bottom-0 border-t border-cyan-300/30 bg-black/40 p-4">
-          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-cyan-300/70">
+        <div className="absolute inset-x-0 bottom-0 border-t border-accent/30 bg-black/40 p-4">
+          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent/70">
             {item.role}
           </p>
-          <p className="mt-1 font-mono text-sm text-cyan-50">{item.name}</p>
+          <p className="mt-1 font-mono text-sm text-bg">{item.name}</p>
         </div>
       )}
 
-      <div className="absolute left-2 top-2 font-mono text-[10px] text-cyan-300/60">
+      <div className="absolute left-2 top-2 font-mono text-[10px] text-accent/60">
         ID://{item.id}
       </div>
-      <div className="absolute right-2 top-2 h-2 w-2 animate-pulse rounded-full bg-cyan-300" />
+      <div className="absolute right-2 top-2 h-2 w-2 animate-pulse rounded-full bg-accent" />
     </div>
   )
 }

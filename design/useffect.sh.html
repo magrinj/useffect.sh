@@ -1,0 +1,1693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>useffect.sh — React Native Expert on Demand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #FAFAF7;
+    --bg-2: #F2F0E9;
+    --ink: #0E0E0C;
+    --ink-2: #1A1A17;
+    --muted: #6B6B66;
+    --muted-2: #9A9A93;
+    --line: #E6E4DD;
+    --line-strong: #D6D3C9;
+    --accent: #00C853;
+    --accent-ink: #003D19;
+    --dark: #0B0B0A;
+    --dark-2: #131311;
+    --dark-line: #232320;
+    --dark-muted: #8A8A82;
+    --warn: #E5484D;
+
+    --sans: "Geist", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
+    --mono: "Geist Mono", ui-monospace, "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+    --container: 1280px;
+    --gutter: clamp(20px, 4vw, 56px);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--bg);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "ss01", "ss02", "cv11";
+  }
+  a { color: inherit; text-decoration: none; }
+  ::selection { background: var(--accent); color: var(--dark); }
+
+  /* ——— Layout ——— */
+  .container { max-width: var(--container); margin: 0 auto; padding: 0 var(--gutter); }
+  .row { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; }
+  section { position: relative; }
+  .rule { height: 1px; background: var(--line); width: 100%; }
+  .rule.dark { background: var(--dark-line); }
+
+  /* ——— Mono utilities ——— */
+  .mono { font-family: var(--mono); }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+    text-transform: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .eyebrow .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,200,83,0.12);
+  }
+  .comment { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+  .comment.dark { color: var(--dark-muted); }
+
+  .us-mark { color: var(--accent); font-weight: 600; }
+
+  /* ——— Buttons ——— */
+  .btn {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 0;
+    cursor: pointer;
+    transition: transform .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--accent); color: var(--dark); border-color: var(--accent); }
+  .btn .arrow { transition: transform .25s ease; }
+  .btn:hover .arrow { transform: translateX(3px); }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+  .btn.ghost:hover { border-color: var(--ink); background: transparent; color: var(--ink); }
+  .btn.lg { padding: 18px 22px; font-size: 14px; }
+  .btn.xl { padding: 22px 26px; font-size: 15px; }
+  .btn.invert { background: var(--bg); color: var(--ink); border-color: var(--bg); }
+  .btn.invert:hover { background: var(--accent); color: var(--dark); border-color: var(--accent); }
+
+  /* ——— Cursor blink ——— */
+  .cursor {
+    display: inline-block;
+    width: 0.55em;
+    height: 1em;
+    background: var(--accent);
+    vertical-align: -0.12em;
+    margin-left: 0.08em;
+    animation: blink 1.05s steps(1) infinite;
+  }
+  .cursor.ink { background: var(--ink); }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ============================================================
+     NAV
+     ============================================================ */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(250,250,247,0.78);
+    backdrop-filter: saturate(140%) blur(12px);
+    -webkit-backdrop-filter: saturate(140%) blur(12px);
+    border-bottom: 1px solid transparent;
+    transition: border-color .2s ease, background .2s ease;
+  }
+  .nav.scrolled { border-bottom-color: var(--line); }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .logo {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    display: inline-flex; align-items: baseline; gap: 0;
+  }
+  .logo .bracket { color: var(--muted); margin-right: 6px; }
+  .nav-links {
+    display: flex; align-items: center; gap: 28px;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  .nav-links a {
+    color: var(--muted);
+    transition: color .15s ease;
+    position: relative;
+    padding: 6px 0;
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-links a::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+    height: 1px; background: var(--ink); transform: scaleX(0); transform-origin: left;
+    transition: transform .25s ease;
+  }
+  .nav-links a:hover::after { transform: scaleX(1); }
+  .nav-right { display: flex; align-items: center; gap: 18px; }
+  .status-pill {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 10px;
+    border: 1px solid var(--line);
+  }
+  .status-pill .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,200,83,0.15);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
+
+  @media (max-width: 880px) {
+    .nav-links { display: none; }
+  }
+
+  /* ============================================================
+     HERO
+     ============================================================ */
+  .hero {
+    padding: 88px 0 120px;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 56px;
+  }
+  .hero-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .hero-meta .meta-left { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
+  .hero-meta .meta-right { font-family: var(--mono); font-size: 12px; color: var(--muted); display: flex; gap: 18px; }
+  .hero-meta .meta-right span b { color: var(--ink); font-weight: 500; }
+
+  .hero-headline {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: clamp(56px, 11.5vw, 184px);
+    line-height: 0.86;
+    letter-spacing: -0.05em;
+    color: var(--ink);
+    margin: 0;
+    text-wrap: balance;
+  }
+  .hero-headline .line { display: block; }
+  .hero-headline .strike {
+    position: relative;
+    color: var(--ink);
+  }
+  .hero-headline .strike .word {
+    position: relative;
+    display: inline-block;
+  }
+  .hero-headline .strike .word::after {
+    content: "";
+    position: absolute;
+    left: -0.04em;
+    right: -0.04em;
+    top: 52%;
+    height: 0.09em;
+    background: var(--warn);
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: strike 1.1s cubic-bezier(.2,.6,.2,1) .6s forwards;
+  }
+  @keyframes strike { to { transform: scaleX(1); } }
+
+  .hero-headline .accent-block {
+    display: inline-block;
+    color: var(--ink);
+    padding: 0 0.04em 0.04em;
+    border-bottom: 0.08em solid var(--accent);
+  }
+
+  .hero-headline .un {
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hero-sub {
+    font-size: clamp(18px, 1.6vw, 22px);
+    line-height: 1.4;
+    color: var(--muted);
+    max-width: 640px;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .hero-sub b { color: var(--ink); font-weight: 500; }
+
+  .hero-actions {
+    display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+  }
+  .hero-actions .note {
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+    margin-left: 6px;
+  }
+
+  /* hero terminal */
+  .hero-terminal {
+    border: 1px solid var(--line-strong);
+    background: var(--bg);
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--ink);
+    overflow: hidden;
+    position: relative;
+  }
+  .terminal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-2);
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .terminal-dots { display: flex; gap: 6px; }
+  .terminal-dots span {
+    width: 9px; height: 9px; border-radius: 50%;
+    border: 1px solid var(--line-strong);
+    background: transparent;
+  }
+  .terminal-title { font-family: var(--mono); font-size: 12px; }
+  .terminal-title b { color: var(--ink); font-weight: 500; }
+  .terminal-body {
+    padding: 22px 24px 26px;
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .terminal-body .ln { display: block; }
+  .tok-c { color: var(--muted); }              /* comment */
+  .tok-k { color: var(--ink); font-weight: 500; } /* keyword */
+  .tok-fn { color: var(--ink); }
+  .tok-s { color: var(--accent-ink); }          /* string */
+  .tok-p { color: var(--muted); }               /* punctuation */
+  .tok-us { color: var(--accent); font-weight: 600; }
+  .tok-warn { color: var(--warn); }
+  .indent { display: inline-block; width: 2ch; }
+  .indent.x2 { width: 4ch; }
+
+  .hero-belt {
+    margin-top: 64px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .belt-cell {
+    padding: 22px 20px;
+    border-right: 1px solid var(--line);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .belt-cell:last-child { border-right: 0; }
+  .belt-cell .label { color: var(--muted); }
+  .belt-cell .val { color: var(--ink); font-size: 15px; }
+  .belt-cell .val .accent { color: var(--accent); }
+  @media (max-width: 880px) {
+    .hero-belt { grid-template-columns: repeat(2, 1fr); }
+    .belt-cell:nth-child(2) { border-right: 0; }
+    .belt-cell:nth-child(1), .belt-cell:nth-child(2) { border-bottom: 1px solid var(--line); }
+  }
+
+  /* ============================================================
+     TWO DOORS
+     ============================================================ */
+  .section { padding: 140px 0; }
+  .section-head {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: end;
+    margin-bottom: 56px;
+  }
+  .section-head h2 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: clamp(40px, 5.2vw, 72px);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+    margin: 12px 0 0;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  .section-head p {
+    color: var(--muted);
+    font-size: clamp(15px, 1.1vw, 17px);
+    max-width: 460px;
+    margin: 0;
+    line-height: 1.5;
+  }
+  @media (max-width: 880px) {
+    .section-head { grid-template-columns: 1fr; gap: 16px; }
+  }
+
+  .doors {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid var(--line);
+  }
+  .door {
+    padding: 48px 44px 44px;
+    border-right: 1px solid var(--line);
+    display: flex; flex-direction: column;
+    gap: 28px;
+    position: relative;
+    transition: background .25s ease;
+    min-height: 540px;
+  }
+  .door:last-child { border-right: 0; }
+  .door:hover { background: var(--bg-2); }
+  .door-tag {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    display: flex; gap: 10px; align-items: center;
+  }
+  .door-tag .glyph {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px;
+    border: 1px solid var(--line-strong);
+    font-size: 11px;
+  }
+  .door h3 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: clamp(34px, 3.6vw, 52px);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    margin: 0;
+  }
+  .door .quote {
+    font-family: var(--sans);
+    font-size: clamp(18px, 1.5vw, 22px);
+    line-height: 1.35;
+    color: var(--ink);
+    margin: 0;
+    letter-spacing: -0.01em;
+    max-width: 460px;
+  }
+  .door ul {
+    list-style: none; padding: 0; margin: 0;
+    display: grid; gap: 0;
+    font-family: var(--mono); font-size: 13px;
+    border-top: 1px solid var(--line);
+  }
+  .door ul li {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 12px;
+    color: var(--ink);
+    align-items: center;
+  }
+  .door ul li .idx { color: var(--muted); }
+  .door ul li .meta { color: var(--muted); }
+  .door .door-foot {
+    margin-top: auto;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 18px;
+    padding-top: 8px;
+  }
+  .door .door-foot .price {
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+  }
+  .door .door-foot .price b { color: var(--ink); font-weight: 500; }
+  @media (max-width: 880px) {
+    .doors { grid-template-columns: 1fr; }
+    .door { border-right: 0; border-bottom: 1px solid var(--line); min-height: auto; }
+    .door:last-child { border-bottom: 0; }
+  }
+
+  /* ============================================================
+     US EFFECT
+     ============================================================ */
+  .effect {
+    background: var(--bg-2);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .effect-head {
+    display: flex; justify-content: space-between; align-items: end;
+    gap: 32px; flex-wrap: wrap;
+    margin-bottom: 48px;
+  }
+  .effect-head h2 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: clamp(44px, 5.6vw, 80px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin: 8px 0 0;
+  }
+  .effect-head h2 .us-mark { font-style: italic; }
+
+  .toggle {
+    display: inline-flex;
+    border: 1px solid var(--ink);
+    font-family: var(--mono);
+    font-size: 13px;
+    overflow: hidden;
+    user-select: none;
+  }
+  .toggle button {
+    background: transparent;
+    border: 0;
+    padding: 12px 18px;
+    font-family: var(--mono);
+    color: var(--ink);
+    cursor: pointer;
+    font-size: 13px;
+    border-right: 1px solid var(--ink);
+    transition: background .15s ease, color .15s ease;
+  }
+  .toggle button:last-child { border-right: 0; }
+  .toggle button.active { background: var(--ink); color: var(--bg); }
+
+  .metrics {
+    border: 1px solid var(--line-strong);
+    background: var(--bg);
+  }
+  .metrics .row-h {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 120px;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--bg-2);
+  }
+  .metric-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 120px;
+    padding: 26px 24px;
+    border-bottom: 1px solid var(--line);
+    align-items: center;
+  }
+  .metric-row:last-child { border-bottom: 0; }
+  .metric-row .name {
+    font-family: var(--mono); font-size: 14px; color: var(--ink);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .metric-row .name small { color: var(--muted); font-size: 12px; }
+  .metric-row .before, .metric-row .after {
+    font-family: var(--sans);
+    font-size: clamp(28px, 2.6vw, 40px);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .metric-row .before { color: var(--muted-2); position: relative; }
+  .metric-row .before::after {
+    content: "";
+    position: absolute; left: -6px; right: 30%;
+    top: 55%; height: 2px; background: var(--muted-2);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform .6s cubic-bezier(.2,.6,.2,1);
+  }
+  .metrics.show-after .metric-row .before::after { transform: scaleX(1); }
+  .metric-row .after {
+    color: var(--ink);
+    opacity: 0; transform: translateY(8px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .metrics.show-after .metric-row .after { opacity: 1; transform: translateY(0); }
+  .metric-row .delta {
+    font-family: var(--mono); font-size: 13px;
+    color: var(--accent);
+    text-align: right;
+    opacity: 0;
+    transition: opacity .4s ease .15s;
+  }
+  .metrics.show-after .metric-row .delta { opacity: 1; }
+  .metric-row .unit { font-family: var(--mono); font-size: 14px; color: var(--muted); font-weight: 400; }
+
+  @media (max-width: 880px) {
+    .metrics .row-h, .metric-row { grid-template-columns: 1fr 1fr; }
+    .metric-row .delta { grid-column: 2; text-align: right; }
+    .metric-row .before { display: none; }
+    .metrics .row-h span:nth-child(1), .metrics .row-h span:nth-child(4) { display: none; }
+  }
+
+  .effect-foot {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 24px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .effect-foot .legend { display: flex; gap: 22px; align-items: center; }
+  .effect-foot .swatch { display: inline-block; width: 10px; height: 10px; background: var(--accent); margin-right: 6px; vertical-align: -1px; }
+
+  /* ============================================================
+     MISSIONS / CASE STUDIES
+     ============================================================ */
+  .missions {
+    display: grid;
+    grid-template-columns: 1fr;
+    border: 1px solid var(--line);
+  }
+  .mission {
+    display: grid;
+    grid-template-columns: 200px 1fr 1fr 1fr;
+    padding: 36px 32px;
+    border-bottom: 1px solid var(--line);
+    align-items: start;
+    gap: 32px;
+    transition: background .2s ease;
+    position: relative;
+  }
+  .mission:last-child { border-bottom: 0; }
+  .mission:hover { background: var(--bg-2); }
+  .mission .mtag {
+    font-family: var(--mono); font-size: 12px;
+    color: var(--muted);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .mission .mtag .code { color: var(--ink); font-weight: 500; }
+  .mission .mtag .yr { color: var(--muted); }
+  .mission .mclient {
+    font-family: var(--sans);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  .mission .mclient small {
+    display: block;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 400;
+    letter-spacing: 0;
+    margin-top: 6px;
+  }
+  .mission .mbrief {
+    font-family: var(--sans);
+    font-size: 15px;
+    color: var(--ink);
+    line-height: 1.45;
+  }
+  .mission .mbrief .crit {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--warn);
+    border: 1px solid currentColor;
+    padding: 2px 6px;
+    margin-bottom: 10px;
+    letter-spacing: 0.04em;
+  }
+  .mission .mresult {
+    display: flex; flex-direction: column; gap: 14px;
+    font-family: var(--mono); font-size: 13px;
+  }
+  .mission .mresult .num {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .mission .mresult .num span { color: var(--accent); }
+  .mission .mresult .label { color: var(--muted); margin-top: 4px; }
+  .mission .arrow-corner {
+    position: absolute; top: 32px; right: 32px;
+    font-family: var(--mono); font-size: 12px; color: var(--muted);
+    opacity: 0; transform: translate(-6px, 6px);
+    transition: opacity .2s ease, transform .2s ease;
+  }
+  .mission:hover .arrow-corner { opacity: 1; transform: translate(0,0); color: var(--ink); }
+  @media (max-width: 1100px) {
+    .mission { grid-template-columns: 1fr 1fr; }
+    .mission .mtag, .mission .mclient, .mission .mbrief, .mission .mresult { grid-column: auto; }
+  }
+  @media (max-width: 700px) {
+    .mission { grid-template-columns: 1fr; }
+  }
+
+  /* ============================================================
+     TEAM (DARK)
+     ============================================================ */
+  .team-section {
+    background: var(--dark);
+    color: #ECEAE0;
+    padding: 160px 0 140px;
+    position: relative;
+    overflow: hidden;
+  }
+  .team-section::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 80px 80px;
+    pointer-events: none;
+  }
+  .team-section > .container { position: relative; }
+  .team-section .eyebrow { color: var(--dark-muted); }
+  .team-section .eyebrow .dot { background: var(--accent); box-shadow: 0 0 0 3px rgba(0,200,83,0.18); }
+
+  .team-section h2 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: clamp(44px, 5.6vw, 84px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin: 12px 0 0;
+    color: #F4F2E8;
+  }
+  .team-section h2 em { font-style: normal; color: var(--accent); }
+
+  .team-lead {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 56px;
+    align-items: end;
+    margin-bottom: 72px;
+  }
+  .team-lead p {
+    font-family: var(--sans);
+    font-size: clamp(16px, 1.2vw, 19px);
+    line-height: 1.55;
+    color: #BFBDB0;
+    max-width: 540px;
+  }
+  .team-lead p b { color: #F4F2E8; font-weight: 500; }
+
+  .pkg {
+    border: 1px solid var(--dark-line);
+    background: #0F0F0D;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.8;
+  }
+  .pkg-head {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--dark-line);
+    color: var(--dark-muted);
+    display: flex; justify-content: space-between;
+    background: #131311;
+  }
+  .pkg-head b { color: #ECEAE0; font-weight: 500; }
+  .pkg-body { padding: 18px 22px; white-space: pre; overflow-x: auto; color: #ECEAE0; }
+  .pkg-body .k { color: var(--accent); }
+  .pkg-body .v { color: #ECEAE0; }
+  .pkg-body .p { color: var(--dark-muted); }
+  .pkg-body .c { color: var(--dark-muted); }
+
+  .squad {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    border: 1px solid var(--dark-line);
+  }
+  .member {
+    border-right: 1px solid var(--dark-line);
+    padding: 0;
+    display: flex; flex-direction: column;
+    background: transparent;
+    transition: background .2s ease;
+  }
+  .member:last-child { border-right: 0; }
+  .member:hover { background: rgba(255,255,255,0.02); }
+  .portrait {
+    aspect-ratio: 3/4;
+    background: #1A1A17;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--dark-line);
+  }
+  .portrait svg { width: 100%; height: 100%; display: block; }
+  .portrait .pmeta {
+    position: absolute; left: 12px; bottom: 10px;
+    font-family: var(--mono); font-size: 11px;
+    color: rgba(236,234,224,0.7);
+    display: flex; gap: 8px;
+  }
+  .portrait .pmeta .v { color: var(--accent); }
+  .portrait .role {
+    position: absolute; top: 12px; left: 12px;
+    font-family: var(--mono); font-size: 11px;
+    color: rgba(236,234,224,0.6);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 3px 7px;
+  }
+  .member-body { padding: 20px 22px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .member-name {
+    font-family: var(--sans);
+    font-weight: 600; font-size: 19px;
+    color: #F4F2E8;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .member-name small {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--dark-muted);
+    margin-top: 4px;
+    letter-spacing: 0;
+  }
+  .member-spec {
+    font-family: var(--mono); font-size: 12px;
+    color: var(--accent);
+    line-height: 1.5;
+  }
+  .member-spec .c { color: var(--dark-muted); }
+  .member-list {
+    list-style: none; padding: 0; margin: 0;
+    font-family: var(--mono); font-size: 11.5px;
+    color: #BFBDB0;
+    display: flex; flex-direction: column; gap: 5px;
+    border-top: 1px solid var(--dark-line);
+    padding-top: 14px;
+  }
+  .member-list li {
+    display: flex; gap: 8px;
+    line-height: 1.3;
+  }
+  .member-list li .tag { color: var(--dark-muted); width: 36px; flex: 0 0 36px; }
+  .member-list li .val { color: #ECEAE0; }
+
+  @media (max-width: 1100px) {
+    .squad { grid-template-columns: repeat(2, 1fr); }
+    .member { border-bottom: 1px solid var(--dark-line); }
+    .member:nth-child(2n) { border-right: 0; }
+    .team-lead { grid-template-columns: 1fr; gap: 32px; }
+  }
+  @media (max-width: 600px) {
+    .squad { grid-template-columns: 1fr; }
+    .member { border-right: 0; }
+  }
+
+  .team-foot {
+    margin-top: 64px;
+    border-top: 1px solid var(--dark-line);
+    padding-top: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--dark-muted);
+  }
+  .team-foot b { color: #ECEAE0; font-weight: 500; }
+  .team-foot .right { display: flex; gap: 24px; align-items: center; }
+
+  /* ============================================================
+     PROCESS
+     ============================================================ */
+  .process-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border: 1px solid var(--line);
+  }
+  .step {
+    padding: 56px 40px 48px;
+    border-right: 1px solid var(--line);
+    display: flex; flex-direction: column; gap: 22px;
+    min-height: 460px;
+    transition: background .2s ease;
+  }
+  .step:last-child { border-right: 0; }
+  .step:hover { background: var(--bg-2); }
+  .step .stepnum {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    display: flex; justify-content: space-between;
+    border-bottom: 1px dashed var(--line-strong);
+    padding-bottom: 14px;
+  }
+  .step .stepnum b { color: var(--ink); font-weight: 500; }
+  .step h3 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: clamp(32px, 3.2vw, 44px);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    margin: 8px 0 0;
+  }
+  .step h3 .dot {
+    color: var(--accent);
+  }
+  .step p {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.55;
+    margin: 0;
+    max-width: 380px;
+  }
+  .step ul {
+    list-style: none; padding: 0; margin: auto 0 0;
+    font-family: var(--mono); font-size: 12.5px;
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+  }
+  .step ul li {
+    display: flex; gap: 10px;
+    padding: 5px 0;
+    color: var(--ink);
+  }
+  .step ul li::before {
+    content: "→";
+    color: var(--accent);
+    flex: 0 0 14px;
+  }
+  @media (max-width: 880px) {
+    .process-grid { grid-template-columns: 1fr; }
+    .step { border-right: 0; border-bottom: 1px solid var(--line); min-height: auto; }
+    .step:last-child { border-bottom: 0; }
+  }
+
+  /* ============================================================
+     FINAL CTA
+     ============================================================ */
+  .closer {
+    padding: 160px 0 120px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    position: relative;
+  }
+  .closer .eyebrow { justify-content: center; }
+  .closer h2 {
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: clamp(56px, 9vw, 144px);
+    line-height: 0.9;
+    letter-spacing: -0.05em;
+    margin: 24px auto 0;
+    color: var(--ink);
+    max-width: 14ch;
+    text-wrap: balance;
+  }
+  .closer h2 em { font-style: italic; color: var(--accent); font-weight: 600; }
+  .closer p {
+    margin: 28px auto 36px;
+    color: var(--muted);
+    max-width: 560px;
+    font-size: 17px;
+    line-height: 1.5;
+  }
+  .closer .actions { display: inline-flex; gap: 14px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .closer .actions .meta { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+  /* ============================================================
+     FOOTER
+     ============================================================ */
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 56px 0 32px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .foot-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr;
+    gap: 32px;
+    margin-bottom: 56px;
+  }
+  .foot-grid .col h4 {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink);
+    margin: 0 0 14px;
+    font-weight: 500;
+  }
+  .foot-grid .col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+  .foot-grid .col a { color: var(--muted); transition: color .15s; }
+  .foot-grid .col a:hover { color: var(--ink); }
+  .foot-brand .logo { font-size: 18px; }
+  .foot-brand p { margin: 16px 0 0; max-width: 280px; line-height: 1.5; color: var(--muted); font-family: var(--sans); font-size: 14px; }
+  .foot-bottom {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid var(--line);
+    padding-top: 22px;
+    gap: 18px; flex-wrap: wrap;
+  }
+  .easter {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    padding: 14px 18px;
+    margin-bottom: 22px;
+    color: var(--muted);
+    display: flex; gap: 12px; align-items: center;
+  }
+  .easter .prompt { color: var(--accent); }
+  .easter b { color: var(--ink); font-weight: 500; }
+  @media (max-width: 880px) {
+    .foot-grid { grid-template-columns: 1fr 1fr; }
+    .foot-brand { grid-column: 1 / -1; }
+  }
+
+  /* tiny grain on hero */
+  .hero::after {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(14,14,12,0.025) 1px, transparent 1px);
+    background-size: 3px 3px;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    opacity: 0.4;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAV
+     ============================================================ -->
+<nav class="nav" id="nav">
+  <div class="container nav-inner">
+    <a href="#" class="logo" aria-label="useffect.sh">
+      <span class="bracket">~/</span>u<span class="us-mark">s</span>ffect<span style="color:var(--muted);">.sh</span>
+    </a>
+    <div class="nav-links">
+      <a href="#work">Work</a>
+      <a href="#services">Services</a>
+      <a href="#team">Team</a>
+      <a href="#writing">Writing</a>
+    </div>
+    <div class="nav-right">
+      <div class="status-pill"><span class="dot"></span> 2 slots · Q3</div>
+      <a href="#contact" class="btn">Trigger the effect <span class="arrow">→</span></a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section class="hero">
+  <div class="container hero-grid">
+
+    <div class="hero-meta">
+      <div class="meta-left">
+        <span class="eyebrow"><span class="dot"></span> React Native Expert on Demand</span>
+        <span class="comment">// v4.2.0 · stable</span>
+      </div>
+      <div class="meta-right">
+        <span><b>5</b> engineers</span>
+        <span><b>11.4M</b> downloads / mo on shipped OSS</span>
+        <span><b>Series A/B</b> only</span>
+      </div>
+    </div>
+
+    <h1 class="hero-headline">
+      <span class="line">WE <span class="un">UN</span>FUCK</span>
+      <span class="line">THE <span class="strike"><span class="word">FUCK</span></span></span>
+      <span class="line">CODE<span class="cursor ink"></span></span>
+    </h1>
+
+    <div class="row" style="margin-top:16px; align-items:start;">
+      <div style="grid-column: span 6; display:flex; flex-direction:column; gap:32px;">
+        <p class="hero-sub">
+          <b>The React Native team you wish you had.</b> A senior collective parachuted into apps that are on fire — or apps that need to be built right the first time. Series&nbsp;A/B startups only.
+        </p>
+        <div class="hero-actions">
+          <a href="#contact" class="btn lg">Trigger the effect <span class="arrow">→</span></a>
+          <a href="#work" class="btn ghost lg">See renders</a>
+          <span class="note">// avg. response &lt; 6h, Mon–Fri</span>
+        </div>
+      </div>
+
+      <div style="grid-column: span 6;">
+        <div class="hero-terminal" aria-label="useEffect code block">
+          <div class="terminal-head">
+            <div style="display:flex; gap:14px; align-items:center;">
+              <div class="terminal-dots"><span></span><span></span><span></span></div>
+              <span class="terminal-title">~/app/<b>src/effects/us.ts</b></span>
+            </div>
+            <span class="terminal-title" style="color:var(--accent);">● live</span>
+          </div>
+          <div class="terminal-body" id="terminal-body"><span class="ln"><span class="tok-c">// when your code mounts us, the effect runs.</span></span><span class="ln"><span class="tok-k">import</span> <span class="tok-p">{</span> useEffect <span class="tok-p">}</span> <span class="tok-k">from</span> <span class="tok-s">"react"</span><span class="tok-p">;</span></span><span class="ln"><span class="tok-k">import</span> <span class="tok-p">{</span> <span class="tok-us">us</span> <span class="tok-p">}</span> <span class="tok-k">from</span> <span class="tok-s">"useffect.sh"</span><span class="tok-p">;</span></span><span class="ln">&nbsp;</span><span class="ln"><span class="tok-k">export function</span> <span class="tok-fn">App</span><span class="tok-p">()</span> <span class="tok-p">{</span></span><span class="ln"><span class="indent"></span><span class="tok-fn">useEffect</span><span class="tok-p">(()</span> <span class="tok-k">=&gt;</span> <span class="tok-p">{</span></span><span class="ln"><span class="indent x2"></span><span class="tok-c">// mounting elite squad…</span></span><span class="ln"><span class="indent x2"></span><span class="tok-k">const</span> ship <span class="tok-p">=</span> <span class="tok-us">us</span><span class="tok-p">.</span><span class="tok-fn">unfuck</span><span class="tok-p">(</span>yourCode<span class="tok-p">);</span></span><span class="ln"><span class="indent x2"></span><span class="tok-k">return</span> <span class="tok-p">()</span> <span class="tok-k">=&gt;</span> ship<span class="tok-p">.</span><span class="tok-fn">cleanly</span><span class="tok-p">();</span> <span class="tok-c">// no debt, full docs</span></span><span class="ln"><span class="indent"></span><span class="tok-p">},</span> <span class="tok-p">[</span><span class="tok-us">us</span><span class="tok-p">]);</span></span><span class="ln"><span class="tok-p">}</span><span class="cursor"></span></span></div>
+        </div>
+        <div class="comment" style="margin-top:14px; display:flex; justify-content:space-between;">
+          <span>// We assemble when your code doesn't.</span>
+          <span>[ deps: <span class="us-mark">us</span> ]</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-belt">
+      <div class="belt-cell">
+        <span class="label">// crash-free median</span>
+        <span class="val"><span class="accent">99.7%</span> across 14 shipped apps</span>
+      </div>
+      <div class="belt-cell">
+        <span class="label">// time to first prod ship</span>
+        <span class="val">9 days · median</span>
+      </div>
+      <div class="belt-cell">
+        <span class="label">// rate</span>
+        <span class="val">$240–320 / hr · senior only</span>
+      </div>
+      <div class="belt-cell">
+        <span class="label">// stack</span>
+        <span class="val">RN 0.74+ · Expo SDK 51 · New Arch</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     TWO DOORS
+     ============================================================ -->
+<section class="section" id="services">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow"><span class="dot"></span> // services.ts</span>
+        <h2>Two doors.<br/>Pick the one on fire.</h2>
+      </div>
+      <p>We don't do retainers, sprints-as-a-service, or "audits" that end in a PDF. We do two things, and we do them at the level you can't hire full-time for.</p>
+    </div>
+
+    <div class="doors">
+      <article class="door">
+        <span class="door-tag"><span class="glyph">!</span> rescue.ts</span>
+        <h3>Rescue.</h3>
+        <p class="quote">"We unfuck the fucked code."</p>
+        <ul>
+          <li><span class="idx">01</span><span>Crashes &amp; ANRs in production</span><span class="meta">P0</span></li>
+          <li><span class="idx">02</span><span>Cold start &amp; runtime performance</span><span class="meta">P0</span></li>
+          <li><span class="idx">03</span><span>New Architecture migration (Fabric · TM)</span><span class="meta">P1</span></li>
+          <li><span class="idx">04</span><span>Bundle size &amp; OTA hygiene</span><span class="meta">P1</span></li>
+          <li><span class="idx">05</span><span>Native modules &amp; bridging hell</span><span class="meta">P1</span></li>
+          <li><span class="idx">06</span><span>Release pipeline &amp; EAS</span><span class="meta">P2</span></li>
+        </ul>
+        <div class="door-foot">
+          <span class="price">// engages in <b>5 business days</b> · 4–10 wk scope</span>
+          <a href="#contact" class="btn">Trigger rescue <span class="arrow">→</span></a>
+        </div>
+      </article>
+
+      <article class="door">
+        <span class="door-tag"><span class="glyph">+</span> build.ts</span>
+        <h3>Build.</h3>
+        <p class="quote">"We build the world a better app."</p>
+        <ul>
+          <li><span class="idx">01</span><span>MVP &amp; V1 from zero</span><span class="meta">8–14 wk</span></li>
+          <li><span class="idx">02</span><span>Full rebuilds (legacy → Expo + RN)</span><span class="meta">10–20 wk</span></li>
+          <li><span class="idx">03</span><span>Design system &amp; component library</span><span class="meta">4–8 wk</span></li>
+          <li><span class="idx">04</span><span>Native features (BLE · camera · ML)</span><span class="meta">on scope</span></li>
+          <li><span class="idx">05</span><span>App Store &amp; Play submission</span><span class="meta">included</span></li>
+          <li><span class="idx">06</span><span>Handoff to your internal team</span><span class="meta">included</span></li>
+        </ul>
+        <div class="door-foot">
+          <span class="price">// kickoff in <b>2 weeks</b> · fixed-scope phases</span>
+          <a href="#contact" class="btn">Trigger build <span class="arrow">→</span></a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     THE US EFFECT
+     ============================================================ -->
+<section class="section effect" id="effect">
+  <div class="container">
+    <div class="effect-head">
+      <div>
+        <span class="eyebrow"><span class="dot"></span> // before vs. after</span>
+        <h2>The <span class="us-mark">us</span> effect.</h2>
+        <p style="color:var(--muted); max-width:520px; margin:18px 0 0; font-size:16px; line-height:1.5;">
+          Every engagement leaves a measurable trace. Same app, same users, same metrics &mdash; before we mount, and after we unmount. Median across the last 8 rescues.
+        </p>
+      </div>
+      <div class="toggle" role="tablist" id="effect-toggle">
+        <button class="" data-state="before" role="tab">before</button>
+        <button class="active" data-state="after" role="tab">after</button>
+      </div>
+    </div>
+
+    <div class="metrics show-after" id="metrics">
+      <div class="row-h">
+        <span>// metric</span>
+        <span>before</span>
+        <span>after</span>
+        <span style="text-align:right;">delta</span>
+      </div>
+
+      <div class="metric-row">
+        <div class="name">Crash-free sessions <small>iOS + Android, 30-day</small></div>
+        <div class="before">94.2<span class="unit">%</span></div>
+        <div class="after">99.7<span class="unit">%</span></div>
+        <div class="delta">+5.5pt</div>
+      </div>
+
+      <div class="metric-row">
+        <div class="name">Cold start (p75) <small>device median, release build</small></div>
+        <div class="before">4.1<span class="unit">s</span></div>
+        <div class="after">1.2<span class="unit">s</span></div>
+        <div class="delta">−71%</div>
+      </div>
+
+      <div class="metric-row">
+        <div class="name">App size <small>download size, iOS</small></div>
+        <div class="before">180<span class="unit">MB</span></div>
+        <div class="after">62<span class="unit">MB</span></div>
+        <div class="delta">−66%</div>
+      </div>
+
+      <div class="metric-row">
+        <div class="name">Store rating <small>30-day rolling, both stores</small></div>
+        <div class="before">3.2<span class="unit">★</span></div>
+        <div class="after">4.7<span class="unit">★</span></div>
+        <div class="delta">+1.5</div>
+      </div>
+
+      <div class="metric-row">
+        <div class="name">CI build time <small>EAS · clean cache</small></div>
+        <div class="before">24<span class="unit">min</span></div>
+        <div class="after">6<span class="unit">min</span></div>
+        <div class="delta">−75%</div>
+      </div>
+
+      <div class="metric-row">
+        <div class="name">JS bundle <small>after Hermes + treeshake</small></div>
+        <div class="before">8.4<span class="unit">MB</span></div>
+        <div class="after">2.1<span class="unit">MB</span></div>
+        <div class="delta">−75%</div>
+      </div>
+    </div>
+
+    <div class="effect-foot">
+      <span>// numbers are real, app names redacted under NDA. detailed reports on request.</span>
+      <span><span class="swatch"></span>after = post-unmount, ≥30 days in production</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     MISSIONS / CASE STUDIES
+     ============================================================ -->
+<section class="section" id="work">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow"><span class="dot"></span> // renders.log</span>
+        <h2>Recent renders.</h2>
+      </div>
+      <p>Six representative missions from the last 18 months. Critical starting situation, the intervention, the resolution in numbers.</p>
+    </div>
+
+    <div class="missions">
+
+      <article class="mission">
+        <div class="mtag">
+          <span class="code">M-014 / reanimate</span>
+          <span class="yr">2025 · 7 weeks · 2 engineers</span>
+        </div>
+        <div class="mclient">
+          Series B neobank
+          <small>4.2M MAU · Brazil + MX</small>
+        </div>
+        <div class="mbrief">
+          <span class="crit">P0 · IN-PROD CRISIS</span>
+          Apple flagged the app for excessive crashes 72h before earnings. JSC heap fragmenting under transaction lists. We migrated to Hermes, rewrote the list virtualization, and shipped under deadline.
+        </div>
+        <div class="mresult">
+          <div><span class="num">94.2% → <span>99.7%</span></span><span class="label">crash-free, 14 days post-ship</span></div>
+          <div><span class="num">−<span>3.4×</span></span><span class="label">cold start on mid-tier Android</span></div>
+        </div>
+        <span class="arrow-corner">read mission →</span>
+      </article>
+
+      <article class="mission">
+        <div class="mtag">
+          <span class="code">M-011 / coldstart-zero</span>
+          <span class="yr">2025 · 5 weeks · 1 engineer</span>
+        </div>
+        <div class="mclient">
+          Vertical-video social
+          <small>Series A · 880K DAU</small>
+        </div>
+        <div class="mbrief">
+          <span class="crit">P0 · RETENTION CLIFF</span>
+          D1 retention falling 9 points behind benchmark. Splash → first feed frame was 4.1s. Lazy-loaded the entire pre-feed graph, pushed media warmup off-thread, killed three SDKs that were blocking startup.
+        </div>
+        <div class="mresult">
+          <div><span class="num">4.1s → <span>1.2s</span></span><span class="label">time to first feed frame, p75</span></div>
+          <div><span class="num">+<span>11pt</span></span><span class="label">D1 retention, 30 days post</span></div>
+        </div>
+        <span class="arrow-corner">read mission →</span>
+      </article>
+
+      <article class="mission">
+        <div class="mtag">
+          <span class="code">M-009 / bundle-diet</span>
+          <span class="yr">2024 · 4 weeks · 1 engineer</span>
+        </div>
+        <div class="mclient">
+          DTC retail app
+          <small>Series B · 1.6M MAU</small>
+        </div>
+        <div class="mbrief">
+          <span class="crit">P1 · APP STORE OVER-LIMIT</span>
+          App at 180MB, blowing past App Store cellular download threshold. Audited every native dep, killed 7 unused frameworks, switched to App Thinning + dynamic assets.
+        </div>
+        <div class="mresult">
+          <div><span class="num">180MB → <span>62MB</span></span><span class="label">download size, iOS</span></div>
+          <div><span class="num">+<span>18%</span></span><span class="label">install completion rate</span></div>
+        </div>
+        <span class="arrow-corner">read mission →</span>
+      </article>
+
+      <article class="mission">
+        <div class="mtag">
+          <span class="code">M-007 / fabric-flip</span>
+          <span class="yr">2024 · 9 weeks · 2 engineers</span>
+        </div>
+        <div class="mclient">
+          Telehealth platform
+          <small>Series A · HIPAA-scoped</small>
+        </div>
+        <div class="mbrief">
+          <span class="crit">P1 · STUCK ON 0.68</span>
+          18 months on RN 0.68, blocked by three legacy native modules. Migrated to New Architecture, rewrote modules as Turbo Modules, kept the team shipping features the entire time.
+        </div>
+        <div class="mresult">
+          <div><span class="num">0.68 → <span>0.74</span></span><span class="label">on New Arch, Fabric on</span></div>
+          <div><span class="num">0<span> regr.</span></span><span class="label">on-call incidents through cutover</span></div>
+        </div>
+        <span class="arrow-corner">read mission →</span>
+      </article>
+
+      <article class="mission">
+        <div class="mtag">
+          <span class="code">M-005 / ground-zero</span>
+          <span class="yr">2024 · 13 weeks · 3 engineers</span>
+        </div>
+        <div class="mclient">
+          Logistics ops tool
+          <small>Seed → A · field-ops, offline-heavy</small>
+        </div>
+        <div class="mbrief">
+          <span class="crit">BUILD · ZERO TO STORE</span>
+          Built V1 from empty repo to both stores. Offline-first sync with conflict resolution, BLE printer integration, role-based offline auth.
+        </div>
+        <div class="mresult">
+          <div><span class="num"><span>13 wk</span></span><span class="label">empty repo → App Store</span></div>
+          <div><span class="num"><span>4.8★</span></span><span class="label">launch month, both stores</span></div>
+        </div>
+        <span class="arrow-corner">read mission →</span>
+      </article>
+
+      <article class="mission">
+        <div class="mtag">
+          <span class="code">M-003 / ci-resurrect</span>
+          <span class="yr">2024 · 3 weeks · 1 engineer</span>
+        </div>
+        <div class="mclient">
+          B2B scheduling SaaS
+          <small>Series B · 60-eng org</small>
+        </div>
+        <div class="mbrief">
+          <span class="crit">P2 · DEV VELOCITY</span>
+          Release pipeline taking 24min per build, flaky 1-in-3. Rewrote EAS config, cached the right things, parallelized Maestro flows. Internal team owns it now.
+        </div>
+        <div class="mresult">
+          <div><span class="num">24 → <span>6 min</span></span><span class="label">release build time</span></div>
+          <div><span class="num"><span>0%</span></span><span class="label">flake rate, 90 days post-handoff</span></div>
+        </div>
+        <span class="arrow-corner">read mission →</span>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     TEAM (DARK)
+     ============================================================ -->
+<section class="team-section" id="team">
+  <div class="container">
+
+    <span class="eyebrow"><span class="dot"></span> // package.json &gt; dependencies</span>
+    <h2>The <em>dependencies.</em></h2>
+
+    <div class="team-lead">
+      <p>Five senior engineers who mount as one. Every member ships native modules to npm, speaks at conferences, and has shipped React Native at scale. <b>No juniors. No subcontractors. No bench.</b> The squad that lands on your project is the squad on this page.</p>
+      <div class="pkg">
+        <div class="pkg-head">
+          <span>~/your-app/package.json</span>
+          <span>// 5 deps · 0 vulnerabilities</span>
+        </div>
+        <div class="pkg-body"><span class="c">// the squad mounts together.</span>
+<span class="p">"</span><span class="k">dependencies</span><span class="p">":</span> <span class="p">{</span>
+<span class="indent"></span><span class="p">"</span><span class="k">@useffect/mira</span><span class="p">":</span>   <span class="p">"</span><span class="v">^7.3.0</span><span class="p">",</span>  <span class="c">// native modules &amp; turbo modules</span>
+<span class="indent"></span><span class="p">"</span><span class="k">@useffect/tomas</span><span class="p">":</span>  <span class="p">"</span><span class="v">^6.1.4</span><span class="p">",</span>  <span class="c">// perf &amp; New Architecture</span>
+<span class="indent"></span><span class="p">"</span><span class="k">@useffect/sora</span><span class="p">":</span>   <span class="p">"</span><span class="v">^5.8.2</span><span class="p">",</span>  <span class="c">// animations &amp; gestures</span>
+<span class="indent"></span><span class="p">"</span><span class="k">@useffect/leo</span><span class="p">":</span>    <span class="p">"</span><span class="v">^8.0.1</span><span class="p">",</span>  <span class="c">// build pipelines &amp; release</span>
+<span class="indent"></span><span class="p">"</span><span class="k">@useffect/ana</span><span class="p">":</span>    <span class="p">"</span><span class="v">^4.9.0</span><span class="p">"</span>   <span class="c">// offline-first &amp; data sync</span>
+<span class="p">}</span></div>
+      </div>
+    </div>
+
+    <div class="squad" id="squad"></div>
+
+    <div class="team-foot">
+      <span>// roster is the work. one team in, same team out.</span>
+      <span class="right">
+        <span><b>147</b> conference talks combined</span>
+        <span><b>11.4M</b> npm downloads / mo</span>
+        <span><b>14</b> shipped apps last 24 mo</span>
+      </span>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ============================================================
+     PROCESS
+     ============================================================ -->
+<section class="section" id="process">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow"><span class="dot"></span> // lifecycle.ts</span>
+        <h2>Mount. Ship.<br/>Unmount.</h2>
+      </div>
+      <p>The whole engagement is a React lifecycle. We come in clean, do the work, and leave your team stronger than we found it &mdash; full docs, zero debt, the bus factor goes up when we go.</p>
+    </div>
+
+    <div class="process-grid">
+
+      <div class="step">
+        <div class="stepnum"><span>01 / componentDidMount</span><b>week 0</b></div>
+        <h3>Mount<span class="dot">.</span></h3>
+        <p>We sit with your code for 5 days. Profile it, fork it, break it, read the on-call docs. You get a written diagnosis with the three things that actually matter — not a 40-page audit.</p>
+        <ul>
+          <li>Repo + crash report ingest</li>
+          <li>Live profiling on prod builds</li>
+          <li>Written diagnosis (max 3 pages)</li>
+          <li>Fixed-scope SOW, signed in week 1</li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <div class="stepnum"><span>02 / render</span><b>weeks 1–N</b></div>
+        <h3>Ship<span class="dot">.</span></h3>
+        <p>We ship to your repo, in your branches, in your standups. Weekly demo on Friday. Numbers update on a shared dashboard. No dark rooms. No "almost done."</p>
+        <ul>
+          <li>PRs in your repo, your review process</li>
+          <li>Weekly demo + written progress note</li>
+          <li>Live metrics dashboard (the us effect)</li>
+          <li>Pair sessions with your engineers</li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <div class="stepnum"><span>03 / componentWillUnmount</span><b>last 2 weeks</b></div>
+        <h3>Unmount<span class="dot">.</span></h3>
+        <p>The hardest part of consulting is leaving cleanly. We write the runbooks, record the loom walkthroughs, train your on-call. If we did our job, you forget our names within a quarter.</p>
+        <ul>
+          <li>Runbooks + architecture decision records</li>
+          <li>Loom walkthroughs for each system</li>
+          <li>30-day on-call shadowing, then dark</li>
+          <li>90-day return ticket, no charge</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     CLOSER
+     ============================================================ -->
+<section class="closer" id="contact">
+  <div class="container">
+    <span class="eyebrow"><span class="dot"></span> // return ()</span>
+    <h2>Your app, with the <em>us</em> effect.</h2>
+    <p>Two slots open for Q3. If your app is on fire — or you're staring at an empty repo and a board deadline — talk to us this week.</p>
+    <div class="actions">
+      <a href="mailto:hello@useffect.sh" class="btn xl">Trigger the effect <span class="arrow">→</span></a>
+      <span class="meta">hello@useffect.sh · avg. response &lt; 6h</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+  <div class="container">
+
+    <div class="easter">
+      <span class="prompt">$</span>
+      <span>// You're inspecting. We like you. <b>careers@useffect.sh</b> &nbsp;·&nbsp; we read every email.</span>
+    </div>
+
+    <div class="foot-grid">
+      <div class="col foot-brand">
+        <a href="#" class="logo">~/u<span class="us-mark">s</span>ffect<span style="color:var(--muted);">.sh</span></a>
+        <p>A senior React Native collective. We mount, we ship, we unmount cleanly. The us effect is the trace we leave behind.</p>
+      </div>
+      <div class="col">
+        <h4>// product</h4>
+        <ul>
+          <li><a href="#services">Rescue</a></li>
+          <li><a href="#services">Build</a></li>
+          <li><a href="#effect">The us effect</a></li>
+          <li><a href="#work">Renders</a></li>
+        </ul>
+      </div>
+      <div class="col">
+        <h4>// company</h4>
+        <ul>
+          <li><a href="#team">Team</a></li>
+          <li><a href="#writing">Writing</a></li>
+          <li><a href="#process">Process</a></li>
+          <li><a href="mailto:hello@useffect.sh">Contact</a></li>
+        </ul>
+      </div>
+      <div class="col">
+        <h4>// social</h4>
+        <ul>
+          <li><a href="#">github.com/useffect</a></li>
+          <li><a href="#">@useffect on X</a></li>
+          <li><a href="#">@useffect.sh on bsky</a></li>
+          <li><a href="#">YouTube · talks</a></li>
+        </ul>
+      </div>
+      <div class="col">
+        <h4>// legal</h4>
+        <ul>
+          <li><a href="#">NDA template</a></li>
+          <li><a href="#">MSA template</a></li>
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Imprint</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="foot-bottom">
+      <span>© 2026 useffect collective · Berlin · Paris · Lisbon · São Paulo</span>
+      <span>v4.2.0 · last deploy 3 days ago · <span style="color:var(--accent);">●</span> all systems operational</span>
+    </div>
+
+  </div>
+</footer>
+
+
+<script>
+  // Sticky nav border on scroll
+  const nav = document.getElementById('nav');
+  const onScroll = () => {
+    if (window.scrollY > 8) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // us effect toggle
+  const metrics = document.getElementById('metrics');
+  document.querySelectorAll('#effect-toggle button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('#effect-toggle button').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      if (b.dataset.state === 'after') metrics.classList.add('show-after');
+      else metrics.classList.remove('show-after');
+    });
+  });
+
+  // Build the squad (portraits = stylized SVG placeholders, B&W)
+  const members = [
+    {
+      initials: 'MO',
+      name: 'Mira Okafor',
+      where: 'Lisbon · ex-Shopify Mobile',
+      spec: '// specialty: native modules &amp; turbo modules',
+      role: '01 / @useffect/mira',
+      libs: [
+        ['npm', 'react-native-mmkv-async'],
+        ['npm', 'rn-turbo-haptics'],
+        ['rfc', 'RN-0042 · Spec gen'],
+        ['talk', 'App.js Conf · "Bridging the abyss"'],
+      ],
+      hue: [42, 38, 56]
+    },
+    {
+      initials: 'TB',
+      name: 'Tomáš Beran',
+      where: 'Berlin · ex-Klarna Performance',
+      spec: '// specialty: perf &amp; New Architecture',
+      role: '02 / @useffect/tomas',
+      libs: [
+        ['npm', 'rn-fabric-profiler'],
+        ['npm', 'hermes-snapshot-cli'],
+        ['talk', 'React Conf · "Cold start was a lie"'],
+        ['post', '0.74 migration field notes'],
+      ],
+      hue: [216, 24, 64]
+    },
+    {
+      initials: 'SH',
+      name: 'Sora Hayashi',
+      where: 'Tokyo · ex-LINE Animations',
+      spec: '// specialty: animations &amp; gestures',
+      role: '03 / @useffect/sora',
+      libs: [
+        ['npm', 'reanimated-recipes'],
+        ['npm', 'rn-gesture-conductor'],
+        ['talk', 'Chain React · "60fps or refund"'],
+        ['oss', 'reanimated · core team'],
+      ],
+      hue: [12, 32, 60]
+    },
+    {
+      initials: 'LM',
+      name: 'Léo Marchand',
+      where: 'Paris · ex-Doctolib DX',
+      spec: '// specialty: build pipelines &amp; release',
+      role: '04 / @useffect/leo',
+      libs: [
+        ['npm', 'eas-warmup'],
+        ['npm', 'expo-canary-channel'],
+        ['talk', 'App.js · "The EAS we deserve"'],
+        ['oss', 'expo-router · contributor'],
+      ],
+      hue: [160, 14, 56]
+    },
+    {
+      initials: 'AK',
+      name: 'Ana Krieger',
+      where: 'São Paulo · ex-Nubank Mobile',
+      spec: '// specialty: offline-first &amp; data sync',
+      role: '05 / @useffect/ana',
+      libs: [
+        ['npm', 'watermelon-sync-kit'],
+        ['npm', 'rn-conflict-graph'],
+        ['talk', 'React Native EU · "Offline isn\'t a state"'],
+        ['oss', 'WatermelonDB · maintainer'],
+      ],
+      hue: [280, 18, 52]
+    },
+  ];
+
+  const squad = document.getElementById('squad');
+  squad.innerHTML = members.map((m, i) => {
+    const [h, s, l] = m.hue;
+    // monochrome B&W silhouette placeholder
+    const grad = `linear-gradient(180deg, hsl(${h} ${s}% ${Math.min(l+18,80)}%) 0%, hsl(${h} ${s}% ${Math.max(l-22,12)}%) 100%)`;
+    return `
+      <article class="member">
+        <div class="portrait" style="background:${grad};">
+          <svg viewBox="0 0 120 160" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <defs>
+              <filter id="grain${i}">
+                <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="${i+3}"/>
+                <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0"/>
+              </filter>
+              <linearGradient id="bw${i}" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.06)"/>
+                <stop offset="100%" stop-color="rgba(0,0,0,0.6)"/>
+              </linearGradient>
+            </defs>
+            <!-- subtle B&W silhouette -->
+            <g fill="rgba(20,20,18,0.55)">
+              <!-- shoulders -->
+              <path d="M0 160 Q0 110 22 95 Q40 86 60 86 Q80 86 98 95 Q120 110 120 160 Z"/>
+              <!-- head -->
+              <ellipse cx="60" cy="58" rx="22" ry="26"/>
+              <!-- neck -->
+              <rect x="50" y="78" width="20" height="12"/>
+            </g>
+            <!-- highlight -->
+            <ellipse cx="60" cy="50" rx="20" ry="22" fill="rgba(255,255,255,0.04)"/>
+            <!-- grain -->
+            <rect width="120" height="160" fill="white" filter="url(#grain${i})" opacity="0.7"/>
+            <!-- vignette -->
+            <rect width="120" height="160" fill="url(#bw${i})"/>
+          </svg>
+          <span class="role">${m.role}</span>
+          <span class="pmeta"><span>ISO 6400</span><span class="v">● rec</span></span>
+        </div>
+        <div class="member-body">
+          <div class="member-name">${m.name}<small>${m.where}</small></div>
+          <div class="member-spec">${m.spec}</div>
+          <ul class="member-list">
+            ${m.libs.map(([t,v]) => `<li><span class="tag">${t}</span><span class="val">${v}</span></li>`).join('')}
+          </ul>
+        </div>
+      </article>`;
+  }).join('');
+
+  // Console easter egg
+  const css = 'color:#00C853; font-family: Geist Mono, monospace; font-size:13px;';
+  const css2 = 'color:#9A9A93; font-family: Geist Mono, monospace; font-size:12px;';
+  console.log('%c// useffect.sh — assembled when your code doesn\'t.', css);
+  console.log('%c// You\'re inspecting. We like you. careers@useffect.sh', css2);
+</script>
+
+</body>
+</html>
