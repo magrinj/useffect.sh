@@ -6,7 +6,12 @@ import { Carousel, type CarouselItem } from './carousel'
 import { useHandTracking } from './use-hand-tracking'
 
 const TEAM: CarouselItem[] = [
-  { id: '001', name: 'Subject Alpha', role: 'Precognitive' },
+  {
+    id: '001',
+    name: 'David Leuliette',
+    role: 'Native Engineer',
+    image: '/david.png',
+  },
   { id: '002', name: 'Subject Bravo', role: 'Architect' },
   { id: '003', name: 'Subject Charlie', role: 'Native Engineer' },
   { id: '004', name: 'Subject Delta', role: 'Strategist' },

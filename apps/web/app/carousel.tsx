@@ -1,9 +1,12 @@
 'use client'
 
+import Image from 'next/image'
+
 export type CarouselItem = {
   id: string
   name: string
   role: string
+  image?: string
 }
 
 type Props = {
@@ -64,11 +67,22 @@ function Portrait({ item, active }: { item: CarouselItem; active: boolean }) {
           'linear-gradient(135deg, rgba(8,47,73,0.6) 0%, rgba(15,23,42,0.8) 100%)',
       }}
     >
-      <div className="flex h-full w-full items-center justify-center">
-        <span className="font-mono text-7xl font-light tracking-wider text-cyan-100/90">
-          {initials}
-        </span>
-      </div>
+      {item.image ? (
+        <Image
+          src={item.image}
+          alt={item.name}
+          fill
+          sizes="280px"
+          priority={active}
+          className="object-cover"
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center">
+          <span className="font-mono text-7xl font-light tracking-wider text-cyan-100/90">
+            {initials}
+          </span>
+        </div>
+      )}
 
       <div className="absolute inset-x-0 bottom-0 border-t border-cyan-300/30 bg-black/40 p-4">
         <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-cyan-300/70">
