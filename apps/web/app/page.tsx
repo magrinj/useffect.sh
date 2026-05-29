@@ -24,15 +24,25 @@ const TEAM: CarouselItem[] = [
     role: 'Native Engineer',
     image: '/matthys.png',
   },
-  { id: '004', name: 'Subject Delta', role: 'Strategist' },
-  { id: '005', name: 'Subject Echo', role: 'Designer' },
-  { id: '006', name: 'Subject Foxtrot', role: 'Analyst' },
-  { id: '007', name: 'Subject Golf', role: 'Operator' },
-  { id: '008', name: 'Subject Hotel', role: 'Cryptographer' },
-  { id: '009', name: 'Subject India', role: 'Sensor Lead' },
-  { id: '010', name: 'Subject Juliet', role: 'Signal Hunter' },
-  { id: '011', name: 'Subject Kilo', role: 'Field Medic' },
-  { id: '012', name: 'Subject Lima', role: 'Handler' },
+  {
+    id: '004',
+    name: 'Ludwig Vantours',
+    role: 'Strategist',
+    image: '/ludwig.png',
+  },
+  {
+    id: '005',
+    name: 'Jérémy Magrin',
+    role: 'Designer',
+    image: '/jeremy.png',
+  },
+  {
+    id: '006',
+    name: 'Gabriel Hofman',
+    role: 'Analyst',
+    image: '/gabriel.png',
+  },
+  { id: '007', name: 'Robots', role: 'Automation' },
 ]
 
 const HAND_CONNECTIONS: Array<[number, number]> = [
