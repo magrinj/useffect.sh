@@ -16,8 +16,8 @@ type Props = {
 
 // Cards sit on a ring around the Y axis. The radius needs to be at least
 // W / (2 * sin(pi/N)) to avoid overlap; clamp() keeps things responsive.
-const CARD_WIDTH = 'clamp(180px, 55vw, 280px)'
-const CARD_HEIGHT = 'clamp(280px, 55vh, 400px)'
+const CARD_WIDTH = 'clamp(140px, 40vw, 280px)'
+const CARD_HEIGHT = 'clamp(220px, 48vh, 400px)'
 const RING_RADIUS = 'clamp(320px, 90vw, 560px)'
 // The whole ring is tilted backward so the camera looks slightly down on it
 // — back cards naturally read as higher than front cards in the viewport.

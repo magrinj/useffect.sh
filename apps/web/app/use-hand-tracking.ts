@@ -138,7 +138,11 @@ export function useHandTracking(
     window.addEventListener('focus', sync)
     window.addEventListener('blur', sync)
 
-    sync()
+    // Initial start only checks visibility — some browsers (notably Safari)
+    // return document.hasFocus() === false until the user first interacts
+    // with the page, which would leave the camera permanently off on cold
+    // load. Subsequent blur/focus events still drive pause/resume.
+    if (!document.hidden) start()
 
     return () => {
       cancelled = true

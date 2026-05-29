@@ -122,6 +122,24 @@ type Engine = {
 }
 type Hitbox = { left: number; right: number; top: number; bottom: number }
 
+// Wheel/touch tuning. WHEEL_BOOST is calibrated so a single 100px mouse-wheel
+// tick advances ~1 item on a ~1000px viewport; trackpad swipes feel natural.
+const WHEEL_BOOST = 2.5
+const WHEEL_RELEASE_MS = 140
+
+function startTracking(s: Engine, x: number, now: number) {
+  s.mode = 'tracking'
+  s.velocity = 0
+  s.anchor = { handX: x, position: s.position }
+  s.samples = [{ x, t: now }]
+}
+
+function updateTracking(s: Engine, x: number, now: number) {
+  s.samples.push({ x, t: now })
+  s.samples = s.samples.filter((p) => now - p.t <= VELOCITY_WINDOW_MS)
+  s.position = s.anchor.position - (x - s.anchor.handX) * HAND_SCALE
+}
+
 function computeHitbox(viewportWidth: number): Hitbox {
   const margin = viewportWidth < COMPACT_VIEWPORT_PX ? 0 : HITBOX_MARGIN_X
   return {
@@ -139,6 +157,7 @@ const modIndex = (p: number) =>
 export default function CinemaPage() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const mainRef = useRef<HTMLElement>(null)
   const engineRef = useRef<Engine>({
     mode: 'idle',
     position: 0,
@@ -161,6 +180,90 @@ export default function CinemaPage() {
     update()
     window.addEventListener('resize', update)
     return () => window.removeEventListener('resize', update)
+  }, [])
+
+  // Manual scroll: touch (mobile) + wheel (desktop trackpad/mouse). Both
+  // drive the same tracking → snap/inertia state machine the hand uses.
+  useEffect(() => {
+    const main = mainRef.current
+    if (!main) return
+
+    let touchActive = false
+    let wheelVirtualX = 0
+    let wheelTimer: number | null = null
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return
+      const t = e.touches[0]
+      if (!t) return
+      startTracking(
+        engineRef.current,
+        t.clientX / window.innerWidth,
+        performance.now(),
+      )
+      setPosition(engineRef.current.position)
+      touchActive = true
+    }
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!touchActive || e.touches.length !== 1) return
+      const t = e.touches[0]
+      if (!t) return
+      updateTracking(
+        engineRef.current,
+        t.clientX / window.innerWidth,
+        performance.now(),
+      )
+      setPosition(engineRef.current.position)
+      e.preventDefault()
+    }
+
+    const onTouchEnd = () => {
+      if (!touchActive) return
+      touchActive = false
+      if (engineRef.current.mode === 'tracking') {
+        releaseTracking(engineRef.current)
+      }
+    }
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      const s = engineRef.current
+      const now = performance.now()
+      const delta =
+        Math.abs(e.deltaX) >= Math.abs(e.deltaY) ? e.deltaX : e.deltaY
+
+      if (s.mode !== 'tracking') {
+        wheelVirtualX = 0
+        startTracking(s, 0, now)
+      }
+      wheelVirtualX -= (delta * WHEEL_BOOST) / window.innerWidth
+      updateTracking(s, wheelVirtualX, now)
+      setPosition(s.position)
+
+      if (wheelTimer !== null) clearTimeout(wheelTimer)
+      wheelTimer = window.setTimeout(() => {
+        if (engineRef.current.mode === 'tracking') {
+          releaseTracking(engineRef.current)
+        }
+        wheelTimer = null
+      }, WHEEL_RELEASE_MS)
+    }
+
+    main.addEventListener('touchstart', onTouchStart, { passive: true })
+    main.addEventListener('touchmove', onTouchMove, { passive: false })
+    main.addEventListener('touchend', onTouchEnd)
+    main.addEventListener('touchcancel', onTouchEnd)
+    main.addEventListener('wheel', onWheel, { passive: false })
+
+    return () => {
+      main.removeEventListener('touchstart', onTouchStart)
+      main.removeEventListener('touchmove', onTouchMove)
+      main.removeEventListener('touchend', onTouchEnd)
+      main.removeEventListener('touchcancel', onTouchEnd)
+      main.removeEventListener('wheel', onWheel)
+      if (wheelTimer !== null) clearTimeout(wheelTimer)
+    }
   }, [])
 
   // Animation loop drives inertia + spring snap. Tracking updates come from
@@ -240,26 +343,18 @@ export default function CinemaPage() {
     }
 
     const now = performance.now()
-    if (s.mode !== 'tracking') {
-      s.mode = 'tracking'
-      s.velocity = 0
-      s.anchor = { handX, position: s.position }
-      s.samples = [{ x: handX, t: now }]
-      return
-    }
-
-    s.samples.push({ x: handX, t: now })
-    s.samples = s.samples.filter((p) => now - p.t <= VELOCITY_WINDOW_MS)
-
-    const next = s.anchor.position - (handX - s.anchor.handX) * HAND_SCALE
-    s.position = next
-    setPosition(next)
+    if (s.mode !== 'tracking') startTracking(s, handX, now)
+    else updateTracking(s, handX, now)
+    setPosition(s.position)
   }, [])
 
   const { status, error } = useHandTracking(videoRef, handleResult)
 
   return (
-    <main className="relative h-screen w-screen overflow-hidden bg-black text-cyan-100">
+    <main
+      ref={mainRef}
+      className="relative h-screen w-screen touch-none overflow-hidden bg-black text-cyan-100"
+    >
       <video
         ref={videoRef}
         autoPlay
