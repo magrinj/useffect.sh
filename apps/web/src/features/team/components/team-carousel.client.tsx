@@ -631,13 +631,27 @@ function CameraLayer({
         autoPlay
         playsInline
         muted
-        className="absolute inset-0 h-full w-full scale-x-[-1] object-cover opacity-20"
+        onLoadedMetadata={() => {
+          // Match the overlay canvas to the real stream size so the hitbox /
+          // skeleton stay aligned even when iOS hands back a different aspect
+          // (e.g. a portrait frame) than the 640×480 we request.
+          const v = videoRef.current
+          const c = canvasRef.current
+          if (v?.videoWidth && c) {
+            c.width = v.videoWidth
+            c.height = v.videoHeight
+          }
+        }}
+        // contain (not cover) on mobile: the carousel box is portrait there, so
+        // cover cropped ~half the landscape frame off-screen — "too zoomed in",
+        // and the visible area no longer matched the active gesture region.
+        className="absolute inset-0 h-full w-full scale-x-[-1] object-contain opacity-20 lg:object-cover"
       />
       <canvas
         ref={canvasRef}
         width={640}
         height={480}
-        className="absolute inset-0 h-full w-full scale-x-[-1] object-cover"
+        className="absolute inset-0 h-full w-full scale-x-[-1] object-contain lg:object-cover"
       />
     </>
   )

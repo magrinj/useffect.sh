@@ -45,7 +45,13 @@ export function useHandTracking(
     let lastVideoTime = -1
     let starting = false
 
-    const isPageActive = () => !document.hidden && document.hasFocus()
+    // `document.hasFocus()` is unreliable on iOS Safari — it stays false even
+    // when the page is foreground and visible (scrolling never grants focus),
+    // which used to block the very first getUserMedia until a real focus event
+    // fired (e.g. after backgrounding then reopening the app). Track focus via
+    // blur/focus EVENTS and gate startup only on actual page visibility.
+    let windowBlurred = false
+    const isPageActive = () => !document.hidden && !windowBlurred
     const shouldRun = () => activeRef.current && isPageActive()
 
     async function ensureLandmarker() {
@@ -146,21 +152,28 @@ export function useHandTracking(
     }
     syncRef.current = sync
 
-    document.addEventListener('visibilitychange', sync)
-    window.addEventListener('focus', sync)
-    window.addEventListener('blur', sync)
+    const onFocus = () => {
+      windowBlurred = false
+      sync()
+    }
+    const onBlur = () => {
+      windowBlurred = true
+      sync()
+    }
 
-    // Initial start only checks visibility — some browsers (notably Safari)
-    // return document.hasFocus() === false until the user first interacts
-    // with the page, which would leave the camera permanently off on cold
-    // load. Subsequent blur/focus events still drive pause/resume.
-    if (activeRef.current && !document.hidden) start()
+    document.addEventListener('visibilitychange', sync)
+    window.addEventListener('focus', onFocus)
+    window.addEventListener('blur', onBlur)
+
+    // Start as soon as the carousel is active and the tab is visible. No longer
+    // gated on hasFocus(), so iOS Safari prompts for the camera on first view.
+    if (shouldRun()) start()
 
     return () => {
       cancelled = true
       document.removeEventListener('visibilitychange', sync)
-      window.removeEventListener('focus', sync)
-      window.removeEventListener('blur', sync)
+      window.removeEventListener('focus', onFocus)
+      window.removeEventListener('blur', onBlur)
       stop()
       landmarker?.close()
       landmarker = null
