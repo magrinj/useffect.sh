@@ -8,7 +8,7 @@ const cells: Cell[] = [
   },
   { label: '// time to first prod ship', value: '9 days · median' },
   { label: '// rate', value: '$240–320 / hr · senior only' },
-  { label: '// stack', value: 'RN 0.74+ · Expo SDK 51 · New Arch' },
+  { label: '// stack', value: 'RN 0.84+ · Expo SDK 56 · New Arch' },
 ]
 
 export function HeroBelt() {

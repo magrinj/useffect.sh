@@ -1,15 +1,12 @@
 import { Container } from '@/components/ui/container'
 import { Logo } from '@/components/ui/logo'
 import { columns } from '../data'
-import { EasterLine } from './easter-line'
 import { FooterColumn } from './footer-column'
 
 export function Footer() {
   return (
     <footer className="border-t border-line bg-bg pt-12 pb-10">
       <Container>
-        <EasterLine />
-
         <div className="mt-10 grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-5">
           <div className="flex flex-col gap-4 lg:col-span-1">
             <a href="/" className="self-start">

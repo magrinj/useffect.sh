@@ -35,7 +35,7 @@ export function Hero() {
             <div className="flex flex-col gap-8">
               <p className="text-[18px] leading-[1.5] text-ink">
                 <b>The React Native team you wish you had.</b> A senior
-                collective parachuted into apps that are on fire — or apps that
+                collective parachuted into apps that are on fire, or apps that
                 need to be built right the first time. Series&nbsp;A/B startups
                 only.
               </p>

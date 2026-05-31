@@ -88,6 +88,8 @@
   display: inline-block;
 }
 .strike .word {
+  position: relative;
+  display: inline-block;
   color: var(--color-muted);
 }
 .strike::after {
@@ -99,9 +101,154 @@
   height: 0.08em;
   background: currentColor;
   transform: rotate(-3deg);
+  z-index: 2;
+}
+
+/* ---------- Easter egg: hovering FUCK makes it "bug out" ---------- */
+/* RGB channel separation (chromatic aberration) + datamosh slicing + jitter. */
+/* Two aria-hidden copies carry the red + blue channels; an animated green
+   text-shadow on the base supplies the third channel. clip-path slices tear
+   the copies into horizontal bands for the noisy, datamoshed look. */
+.glitch-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  /* multiply keeps the fringes vivid on the light hero background */
+  mix-blend-mode: multiply;
+  will-change: transform, clip-path;
+}
+.glitch-r {
+  color: #ff0033; /* red channel */
+}
+.glitch-b {
+  color: #0066ff; /* blue channel */
+}
+
+@media (hover: hover) {
+  .strike:hover .word {
+    color: var(--color-ink);
+    cursor: crosshair;
+    animation: glitch-jitter 0.12s steps(2, end) infinite;
+  }
+  .strike:hover .glitch-r {
+    opacity: 0.92;
+    animation: glitch-r 0.45s steps(9, end) infinite;
+  }
+  .strike:hover .glitch-b {
+    opacity: 0.92;
+    animation: glitch-b 0.5s steps(9, end) infinite reverse;
+  }
+}
+
+/* whole-word horizontal vibration + flickering green channel via text-shadow */
+@keyframes glitch-jitter {
+  0% {
+    transform: translateX(0);
+    text-shadow: 0 0 transparent;
+  }
+  20% {
+    transform: translateX(-2px);
+    text-shadow: 2px 0 #00e000;
+  }
+  40% {
+    transform: translateX(2px);
+    text-shadow: -2px 0 #00e000;
+  }
+  60% {
+    transform: translateX(-1px);
+    text-shadow: 3px 0 #00e000;
+  }
+  80% {
+    transform: translateX(2px);
+    text-shadow: -3px 0 #00e000;
+  }
+  100% {
+    transform: translateX(0);
+    text-shadow: 0 0 transparent;
+  }
+}
+
+/* red channel: drifts left, sliced into shifting horizontal bands */
+@keyframes glitch-r {
+  0% {
+    transform: translateX(0);
+    clip-path: inset(0 0 0 0);
+  }
+  15% {
+    transform: translateX(-4px);
+    clip-path: inset(8% 0 62% 0);
+  }
+  30% {
+    transform: translateX(-6px);
+    clip-path: inset(74% 0 6% 0);
+  }
+  45% {
+    transform: translateX(-3px);
+    clip-path: inset(34% 0 42% 0);
+  }
+  60% {
+    transform: translateX(-7px);
+    clip-path: inset(50% 0 18% 0);
+  }
+  75% {
+    transform: translateX(-2px);
+    clip-path: inset(20% 0 70% 0);
+  }
+  90% {
+    transform: translateX(-5px);
+    clip-path: inset(88% 0 2% 0);
+  }
+  100% {
+    transform: translateX(0);
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* blue channel: drifts right, sliced on a different rhythm */
+@keyframes glitch-b {
+  0% {
+    transform: translateX(0);
+    clip-path: inset(0 0 0 0);
+  }
+  15% {
+    transform: translateX(5px);
+    clip-path: inset(64% 0 12% 0);
+  }
+  30% {
+    transform: translateX(7px);
+    clip-path: inset(12% 0 70% 0);
+  }
+  45% {
+    transform: translateX(3px);
+    clip-path: inset(46% 0 30% 0);
+  }
+  60% {
+    transform: translateX(6px);
+    clip-path: inset(80% 0 8% 0);
+  }
+  75% {
+    transform: translateX(2px);
+    clip-path: inset(26% 0 56% 0);
+  }
+  90% {
+    transform: translateX(4px);
+    clip-path: inset(6% 0 84% 0);
+  }
+  100% {
+    transform: translateX(0);
+    clip-path: inset(0 0 0 0);
+  }
 }
 
 /* ---------- Reduced motion ---------- */
+/* Suppress the glitch easter egg entirely — no static colour artefacts. */
+@media (prefers-reduced-motion: reduce) {
+  .glitch-layer {
+    /* biome-ignore lint/complexity/noImportantStyles: must override the :hover opacity that the global reset can't reach */
+    opacity: 0 !important;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

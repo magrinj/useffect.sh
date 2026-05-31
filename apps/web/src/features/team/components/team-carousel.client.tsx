@@ -4,10 +4,16 @@ import type { HandLandmarkerResult } from '@mediapipe/tasks-vision'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { members } from '../data'
 import { useHandTracking } from '../hooks/use-hand-tracking.client'
-import { Carousel, type CarouselItem } from './carousel.client'
+import {
+  Carousel,
+  type CarouselHandle,
+  type CarouselItem,
+} from './carousel.client'
 
-const HITBOX_TOP = 0.15
-const HITBOX_BOTTOM = 0.7
+// Hitbox band, vertically centered on the camera frame.
+const HITBOX_HEIGHT = 0.55
+const HITBOX_TOP = (1 - HITBOX_HEIGHT) / 2
+const HITBOX_BOTTOM = HITBOX_TOP + HITBOX_HEIGHT
 const HITBOX_MARGIN_X = 0.15
 const COMPACT_VIEWPORT_PX = 1024
 const HAND_SCALE = 4
@@ -18,8 +24,14 @@ const SNAP_VELOCITY = 1.3
 const SPRING_STIFFNESS = 180
 const SPRING_DAMPING = 24
 const MIN_HAND_SIZE = 0.22
-const WHEEL_BOOST = 2.5
+const WHEEL_BOOST = 1.0
 const WHEEL_RELEASE_MS = 140
+// A wheel gesture only scrubs when it's clearly horizontal — deltaX must beat
+// deltaY by this factor. Otherwise we leave it to scroll the page vertically.
+const WHEEL_HORIZONTAL_RATIO = 1.2
+// After manual touch/wheel input ends, keep hand-tracking locked out this long
+// so it can't snatch the carousel mid-settle.
+const MANUAL_LOCK_MS = 500
 
 const HAND_CONNECTIONS: ReadonlyArray<readonly [number, number]> = [
   [0, 1],
@@ -55,6 +67,52 @@ const TEAM: CarouselItem[] = members.map((m) => ({
 const ITEM_COUNT = TEAM.length
 const modIndex = (p: number) =>
   ((Math.round(p) % ITEM_COUNT) + ITEM_COUNT) % ITEM_COUNT
+
+// Vertical space reserved for the header / footer overlays so cards never
+// slide under the text. Mirrored as padding on the carousel ring.
+const INSET_TOP = 72
+const INSET_BOTTOM = 120
+// Breathing room between a card edge and the reserved overlay zones.
+const CARD_GAP = 24
+// Source portraits are 2:3 (1024×1536) — keep that ratio when scaling.
+const CARD_ASPECT = 2 / 3
+const MAX_CARD_HEIGHT = 480
+const MIN_CARD_HEIGHT = 180
+
+type CardLayout = { cardWidth: number; cardHeight: number; radius: number }
+
+// Must match the `perspective` on the Carousel ring.
+const PERSPECTIVE = 1500
+// For N=6 the minimum non-overlapping radius is the card width; 1.35× keeps
+// a comfortable gap between adjacent portraits on the ring.
+const RADIUS_FACTOR = 1.35
+
+// Fit the front card inside the container minus the reserved overlay zones.
+// The card sits at translateZ(radius), so perspective magnifies its rendered
+// size — we size against that *rendered* box (not the layout box) so the
+// magnified front card never spills into the header/footer text. Width follows
+// the fixed 2:3 portrait ratio and is capped to a share of the container width
+// so neighbouring ring cards stay on screen.
+function computeCardLayout(width: number, height: number): CardLayout {
+  const availH = height - INSET_TOP - INSET_BOTTOM - CARD_GAP * 2
+  let cardHeight = Math.max(MIN_CARD_HEIGHT, Math.min(MAX_CARD_HEIGHT, availH))
+  // Iterate: magnification depends on radius which depends on the card size.
+  for (let i = 0; i < 4; i++) {
+    const radius = cardHeight * CARD_ASPECT * RADIUS_FACTOR
+    const mag = PERSPECTIVE / Math.max(1, PERSPECTIVE - radius)
+    const fitByHeight = availH / mag
+    const fitByWidth = (width * 0.5) / (CARD_ASPECT * mag)
+    const fit = Math.min(fitByHeight, fitByWidth)
+    cardHeight = Math.max(MIN_CARD_HEIGHT, Math.min(MAX_CARD_HEIGHT, fit))
+  }
+  const cardWidth = cardHeight * CARD_ASPECT
+  const radius = cardWidth * RADIUS_FACTOR
+  return { cardWidth, cardHeight, radius }
+}
+
+const VISIBLE_ENTER = 0.8
+const VISIBLE_EXIT = 0.55
+const VISIBILITY_THRESHOLDS = Array.from({ length: 21 }, (_, i) => i / 20)
 
 type Landmark = { x: number; y: number; z?: number }
 type Mode = 'idle' | 'tracking' | 'inertia' | 'snap'
@@ -210,11 +268,7 @@ function drawOverlay(
   ctx.shadowBlur = 0
 }
 
-type CameraMode =
-  | 'wheel-touch'
-  | 'camera-loading'
-  | 'camera-active'
-  | 'camera-denied'
+type TrackingStatus = 'idle' | 'loading' | 'ready' | 'error'
 
 export function TeamCarousel() {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -231,9 +285,39 @@ export function TeamCarousel() {
   const hitboxRef = useRef<Hitbox>(
     computeHitbox(typeof window === 'undefined' ? 1280 : window.innerWidth),
   )
+  // Manual touch/wheel input takes priority: while a drag is held, or for a
+  // short cooldown after one, hand-tracking is locked out so the two inputs
+  // never fight over the carousel.
+  const manualHoldRef = useRef(false)
+  const manualUntilRef = useRef(0)
 
-  const [position, setPosition] = useState(0)
-  const [cameraMode, setCameraMode] = useState<CameraMode>('wheel-touch')
+  // The scrub position lives in a ref and is pushed straight to the carousel's
+  // imperative handle — it never goes through React state, so dragging at
+  // 60fps doesn't re-render the card tree. Only the front-card index, used by
+  // the header counter and footer label, is React state (flips ~6×/spin).
+  const positionRef = useRef(0)
+  const carouselRef = useRef<CarouselHandle>(null)
+  const [activeIndex, setActiveIndex] = useState(0)
+
+  const applyPosition = useCallback((p: number) => {
+    positionRef.current = p
+    carouselRef.current?.render(p)
+    const idx = modIndex(p)
+    setActiveIndex((prev) => (prev === idx ? prev : idx))
+  }, [])
+
+  // `cameraEnabled` mounts the CameraLayer once and keeps it mounted so the
+  // landmarker survives; `visible` then pauses/resumes the stream as the
+  // section scrolls in and out of view.
+  const [cameraEnabled, setCameraEnabled] = useState(false)
+  const [trackingStatus, setTrackingStatus] = useState<TrackingStatus>('idle')
+  const [layout, setLayout] = useState<CardLayout>(() =>
+    computeCardLayout(960, 600),
+  )
+  const [visible, setVisible] = useState(false)
+  // Once the user blocks the camera we stop auto-requesting it on every
+  // re-entry, otherwise scrolling past would spam the permission prompt.
+  const deniedRef = useRef(false)
 
   useEffect(() => {
     const update = () => {
@@ -243,6 +327,46 @@ export function TeamCarousel() {
     window.addEventListener('resize', update)
     return () => window.removeEventListener('resize', update)
   }, [])
+
+  // Track the container size so cards scale to fit instead of overflowing.
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const measure = () => {
+      const rect = el.getBoundingClientRect()
+      setLayout(computeCardLayout(rect.width, rect.height))
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  // Enable the camera once the carousel is ≥80% on screen, disable it again
+  // when it scrolls mostly out of view (hysteresis avoids flapping).
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      (entries) => {
+        const ratio = entries[0]?.intersectionRatio ?? 0
+        setVisible((prev) => {
+          if (!prev && ratio >= VISIBLE_ENTER) return true
+          if (prev && ratio < VISIBLE_EXIT) return false
+          return prev
+        })
+      },
+      { threshold: VISIBILITY_THRESHOLDS },
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
+  // First time it scrolls into view, mount the camera layer (unless blocked).
+  // It then stays mounted; `visible` drives pause/resume from there.
+  useEffect(() => {
+    if (visible && !deniedRef.current) setCameraEnabled(true)
+  }, [visible])
 
   useEffect(() => {
     const el = containerRef.current
@@ -261,8 +385,9 @@ export function TeamCarousel() {
         t.clientX / window.innerWidth,
         performance.now(),
       )
-      setPosition(engineRef.current.position)
+      applyPosition(engineRef.current.position)
       touchActive = true
+      manualHoldRef.current = true
     }
     const onTouchMove = (e: TouchEvent) => {
       if (!touchActive || e.touches.length !== 1) return
@@ -273,28 +398,34 @@ export function TeamCarousel() {
         t.clientX / window.innerWidth,
         performance.now(),
       )
-      setPosition(engineRef.current.position)
+      applyPosition(engineRef.current.position)
       e.preventDefault()
     }
     const onTouchEnd = () => {
       if (!touchActive) return
       touchActive = false
+      manualHoldRef.current = false
+      manualUntilRef.current = performance.now() + MANUAL_LOCK_MS
       if (engineRef.current.mode === 'tracking')
         releaseTracking(engineRef.current)
     }
     const onWheel = (e: WheelEvent) => {
+      // Only hijack clearly-horizontal gestures; let vertical wheel/trackpad
+      // scroll the page so users can scroll past the section without snagging.
+      if (Math.abs(e.deltaX) < Math.abs(e.deltaY) * WHEEL_HORIZONTAL_RATIO)
+        return
       e.preventDefault()
       const s = engineRef.current
       const now = performance.now()
-      const delta =
-        Math.abs(e.deltaX) >= Math.abs(e.deltaY) ? e.deltaX : e.deltaY
+      manualUntilRef.current = now + MANUAL_LOCK_MS
+      const delta = e.deltaX
       if (s.mode !== 'tracking') {
         wheelVirtualX = 0
         startTracking(s, 0, now)
       }
       wheelVirtualX -= (delta * WHEEL_BOOST) / window.innerWidth
       updateTracking(s, wheelVirtualX, now)
-      setPosition(s.position)
+      applyPosition(s.position)
       if (wheelTimer !== null) clearTimeout(wheelTimer)
       wheelTimer = window.setTimeout(() => {
         if (engineRef.current.mode === 'tracking')
@@ -317,7 +448,7 @@ export function TeamCarousel() {
       el.removeEventListener('wheel', onWheel)
       if (wheelTimer !== null) clearTimeout(wheelTimer)
     }
-  }, [])
+  }, [applyPosition])
 
   useEffect(() => {
     let raf = 0
@@ -335,7 +466,7 @@ export function TeamCarousel() {
           s.snapTarget = Math.round(s.position)
           s.mode = 'snap'
         }
-        setPosition(s.position)
+        applyPosition(s.position)
         return
       }
 
@@ -356,50 +487,61 @@ export function TeamCarousel() {
           s.velocity = 0
           s.mode = 'idle'
         }
-        setPosition(s.position)
+        applyPosition(s.position)
       }
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [])
+  }, [applyPosition])
 
-  const handleResult = useCallback((result: HandLandmarkerResult) => {
-    const s = engineRef.current
-    const hbox = hitboxRef.current
-    const hand = pickHand(result.landmarks as Landmark[][])
-    drawOverlay(canvasRef.current, hand, hbox)
+  const handleResult = useCallback(
+    (result: HandLandmarkerResult) => {
+      const s = engineRef.current
+      const hbox = hitboxRef.current
+      const hand = pickHand(result.landmarks as Landmark[][])
+      drawOverlay(canvasRef.current, hand, hbox)
 
-    if (!hand) {
-      if (s.mode === 'tracking') releaseTracking(s)
-      return
+      // Manual touch/wheel input wins: while it's held or still cooling down,
+      // ignore the hand entirely so the gesture can't fight the scroll.
+      if (manualHoldRef.current || performance.now() < manualUntilRef.current)
+        return
+
+      if (!hand) {
+        if (s.mode === 'tracking') releaseTracking(s)
+        return
+      }
+      const tip = hand[8]
+      if (!tip) return
+
+      const handX = 1 - tip.x
+      const handY = tip.y
+      const inside =
+        handY >= hbox.top &&
+        handY <= hbox.bottom &&
+        handX >= hbox.left &&
+        handX <= hbox.right
+
+      if (!inside) {
+        if (s.mode === 'tracking') releaseTracking(s)
+        return
+      }
+      const now = performance.now()
+      if (s.mode !== 'tracking') startTracking(s, handX, now)
+      else updateTracking(s, handX, now)
+      applyPosition(s.position)
+    },
+    [applyPosition],
+  )
+
+  const handleCameraStatus = useCallback((s: TrackingStatus) => {
+    setTrackingStatus(s)
+    if (s === 'error') {
+      // Blocked/unavailable: unmount to free the landmarker and don't retry.
+      deniedRef.current = true
+      setCameraEnabled(false)
     }
-    const tip = hand[8]
-    if (!tip) return
-
-    const handX = 1 - tip.x
-    const handY = tip.y
-    const inside =
-      handY >= hbox.top &&
-      handY <= hbox.bottom &&
-      handX >= hbox.left &&
-      handX <= hbox.right
-
-    if (!inside) {
-      if (s.mode === 'tracking') releaseTracking(s)
-      return
-    }
-    const now = performance.now()
-    if (s.mode !== 'tracking') startTracking(s, handX, now)
-    else updateTracking(s, handX, now)
-    setPosition(s.position)
   }, [])
 
-  const handleCameraStatus = useCallback((s: 'loading' | 'ready' | 'error') => {
-    if (s === 'ready') setCameraMode('camera-active')
-    if (s === 'error') setCameraMode('camera-denied')
-  }, [])
-
-  const activeIndex = modIndex(position)
   const activeItem = TEAM[activeIndex]
 
   return (
@@ -407,12 +549,13 @@ export function TeamCarousel() {
       ref={containerRef}
       className="relative aspect-[16/10] max-h-[80vh] min-h-[500px] w-full touch-none overflow-hidden border border-dark-line bg-dark"
     >
-      {cameraMode !== 'wheel-touch' && (
+      {cameraEnabled && (
         <CameraLayer
           videoRef={videoRef}
           canvasRef={canvasRef}
           onResult={handleResult}
           onStatus={handleCameraStatus}
+          active={visible}
         />
       )}
 
@@ -420,32 +563,32 @@ export function TeamCarousel() {
 
       <header className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-6 py-5 font-mono text-[11px] uppercase tracking-[0.3em] text-accent/70">
         <span>useffect.sh / dependencies</span>
-        <span>{statusLabel(cameraMode)}</span>
+        <span>{statusLabel(cameraEnabled, trackingStatus)}</span>
         <span>
           {String(activeIndex + 1).padStart(2, '0')} /{' '}
           {String(TEAM.length).padStart(2, '0')}
         </span>
       </header>
 
-      <Carousel items={TEAM} position={position} />
+      <Carousel
+        ref={carouselRef}
+        items={TEAM}
+        activeIndex={activeIndex}
+        cardWidth={layout.cardWidth}
+        cardHeight={layout.cardHeight}
+        radius={layout.radius}
+        insetTop={INSET_TOP}
+        insetBottom={INSET_BOTTOM}
+      />
 
-      <footer className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center gap-3 pb-6 font-mono text-[11px] uppercase tracking-[0.25em] text-dark-muted">
+      <footer className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center gap-2 pb-6 font-mono text-[11px] uppercase tracking-[0.25em] text-dark-muted">
         {activeItem && (
           <p className="text-bg">
             <span className="text-accent">▸</span> {activeItem.name}{' '}
             <span className="text-dark-muted">— {activeItem.role}</span>
           </p>
         )}
-        {cameraMode === 'wheel-touch' && (
-          <button
-            type="button"
-            onClick={() => setCameraMode('camera-loading')}
-            className="border border-accent/60 px-4 py-2 text-accent transition-colors hover:border-accent hover:bg-accent hover:text-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          >
-            Enable camera
-          </button>
-        )}
-        {cameraMode === 'camera-denied' && (
+        {trackingStatus === 'error' && (
           <p className="text-warn">camera blocked — wheel & swipe still work</p>
         )}
         <p>swipe or scroll to scrub</p>
@@ -454,11 +597,12 @@ export function TeamCarousel() {
   )
 }
 
-function statusLabel(mode: CameraMode) {
-  if (mode === 'wheel-touch') return 'standby'
-  if (mode === 'camera-loading') return 'booting precog...'
-  if (mode === 'camera-active') return 'tracking active'
-  return 'sensor offline'
+function statusLabel(enabled: boolean, status: TrackingStatus) {
+  if (status === 'error') return 'sensor offline'
+  if (!enabled) return 'standby'
+  if (status === 'loading') return 'booting precog...'
+  if (status === 'ready') return 'tracking active'
+  return 'standby'
 }
 
 function CameraLayer({
@@ -466,18 +610,18 @@ function CameraLayer({
   canvasRef,
   onResult,
   onStatus,
+  active,
 }: {
   videoRef: React.RefObject<HTMLVideoElement | null>
   canvasRef: React.RefObject<HTMLCanvasElement | null>
   onResult: (r: HandLandmarkerResult) => void
-  onStatus: (s: 'loading' | 'ready' | 'error') => void
+  onStatus: (s: TrackingStatus) => void
+  active: boolean
 }) {
-  const { status } = useHandTracking(videoRef, onResult)
+  const { status } = useHandTracking(videoRef, onResult, active)
 
   useEffect(() => {
-    if (status === 'loading') onStatus('loading')
-    else if (status === 'ready') onStatus('ready')
-    else if (status === 'error') onStatus('error')
+    onStatus(status)
   }, [status, onStatus])
 
   return (
@@ -487,12 +631,12 @@ function CameraLayer({
         autoPlay
         playsInline
         muted
-        className="absolute inset-0 h-full w-full scale-x-[-1] object-cover opacity-40"
+        className="absolute inset-0 h-full w-full scale-x-[-1] object-cover opacity-20"
       />
       <canvas
         ref={canvasRef}
-        width={1280}
-        height={720}
+        width={640}
+        height={480}
         className="absolute inset-0 h-full w-full scale-x-[-1] object-cover"
       />
     </>

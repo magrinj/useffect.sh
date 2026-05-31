@@ -9,7 +9,17 @@ export function HeroHeadline() {
       <span className="block">
         THE{' '}
         <span className="strike">
-          <span className="word">FUCK</span>
+          <span className="word">
+            FUCK
+            {/* RGB-split copies for the glitch easter egg — hidden from a11y so
+                the heading still reads a single "FUCK". */}
+            <span className="glitch-layer glitch-r" aria-hidden="true">
+              FUCK
+            </span>
+            <span className="glitch-layer glitch-b" aria-hidden="true">
+              FUCK
+            </span>
+          </span>
         </span>
       </span>
       <span className="block">
