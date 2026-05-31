@@ -581,7 +581,7 @@ export function TeamCarousel() {
         insetBottom={INSET_BOTTOM}
       />
 
-      <footer className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center gap-2 pb-6 font-mono text-[11px] uppercase tracking-[0.25em] text-dark-muted">
+      <footer className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center gap-2 px-6 pb-6 text-center font-mono text-[11px] uppercase tracking-[0.25em] text-dark-muted">
         {activeItem && (
           <p className="text-bg">
             <span className="text-accent">▸</span> {activeItem.name}{' '}
