@@ -52,9 +52,9 @@ export function Hero() {
 
             <div className="flex flex-col gap-[14px]">
               <HeroTerminal />
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4">
                 <Comment>{"// We assemble when your code doesn't."}</Comment>
-                <Comment>
+                <Comment className="whitespace-nowrap">
                   [ deps: <span className="text-accent font-semibold">us</span>{' '}
                   ]
                 </Comment>
