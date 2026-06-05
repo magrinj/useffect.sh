@@ -49,12 +49,6 @@ export function MissionCard({ mission }: MissionCardProps) {
           </div>
         ))}
       </dl>
-      <span
-        aria-hidden
-        className="absolute right-6 bottom-6 font-mono text-[12px] text-muted opacity-0 transition-opacity group-hover:opacity-100"
-      >
-        {'read mission →'}
-      </span>
     </article>
   )
 }

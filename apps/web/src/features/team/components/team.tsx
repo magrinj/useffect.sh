@@ -1,8 +1,8 @@
 import { Section } from '@/components/section'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
+import { HeroGrid } from './hero-grid.client'
 import { PackageBlock } from './package-block'
-import { TeamCarousel } from './team-carousel.client'
 
 export function Team() {
   return (
@@ -13,19 +13,19 @@ export function Team() {
           The <em className="not-italic text-accent">dependencies.</em>
         </h2>
 
-        <div className="mt-12 grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1fr]">
-          <p className="text-[16px] leading-[1.55] text-dark-muted">
-            Six senior engineers who mount as one. Every member ships native
-            modules to npm, speaks at conferences, and has shipped React Native
-            at scale.{' '}
-            <b className="text-bg">No juniors. No subcontractors. No bench.</b>{' '}
-            The squad that lands on your project is the squad on this page.
-          </p>
+        <p className="mt-8 max-w-[640px] text-[16px] leading-[1.55] text-dark-muted">
+          Six senior engineers. Different specialties, different years shipping,
+          same standard.{' '}
+          <b className="text-bg">No juniors. No subcontractors. No bench.</b>{' '}
+          The squad that lands on your project is the squad on this page.
+        </p>
+
+        <div className="mt-12">
           <PackageBlock />
         </div>
 
         <div className="mt-16">
-          <TeamCarousel />
+          <HeroGrid />
         </div>
       </Container>
     </Section>

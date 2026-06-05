@@ -1,4 +1,5 @@
 import { Closer } from '@/features/closer/components/closer'
+import { Community } from '@/features/community/components/community'
 import { Effect } from '@/features/effect/components/effect'
 import { Footer } from '@/features/footer/components/footer'
 import { Hero } from '@/features/hero/components/hero'
@@ -19,6 +20,7 @@ export default function Home() {
         <Missions />
         <Team />
         <Process />
+        <Community />
         <Closer />
       </main>
       <Footer />

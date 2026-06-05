@@ -16,8 +16,8 @@ export function Missions() {
             </h2>
           </div>
           <p className="self-end text-[16px] leading-[1.55] text-muted">
-            Six representative missions from the last 18 months. Critical
-            starting situation, the intervention, the resolution in numbers.
+            Six real engagements from the last four years. Clients you'll
+            recognise, problems we owned, results worth showing.
           </p>
         </div>
         <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-2">

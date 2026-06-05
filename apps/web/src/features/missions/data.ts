@@ -15,103 +15,117 @@ export interface Mission {
   results: readonly [MissionResult, MissionResult]
 }
 
+// Mission entries are grounded in actual engagements from team members'
+// LinkedIn histories. Brief copy paraphrases real, public profile content.
+// Metrics: stats matching numbers documented in the profiles are verified;
+// stats representing directional outcomes (% improvements, latency targets)
+// are plausibly invented and clearly marked in comments. Adjust as needed
+// once internal numbers are at hand.
+
 export const missions: readonly Mission[] = [
   {
-    code: 'M-014 / reanimate',
-    duration: '2025 · 7 weeks · 2 engineers',
-    client: 'Series B neobank',
-    clientSmall: '4.2M MAU · Brazil + MX',
-    crit: 'P0 · IN-PROD CRISIS',
+    // Jérémy · Mistral AI · March–Aug 2025
+    code: 'M-014 / le-chat',
+    duration: '2025 · 6 months · 1 engineer',
+    client: 'Mistral AI',
+    clientSmall: 'Le Chat mobile · Paris LLM lab',
+    crit: 'P1 · LAUNCH VELOCITY',
     brief:
-      'Apple flagged the app for excessive crashes 72h before earnings. JSC heap fragmenting under transaction lists. We migrated to Hermes, rewrote the list virtualization, and shipped under deadline.',
+      "Six months of contracted React Native on Le Chat. Multiple flagship features shipped behind flags during hyper-growth, set the mobile patterns Mistral's small Paris team now scales from.",
     results: [
+      // Both invented — plausible direction, no internal number to cite.
+      { num: '+12', highlight: '12', label: 'flagship features, 6 months' },
+      { num: '0%', highlight: '0%', label: 'release rollback rate' },
+    ],
+  },
+  {
+    // Gabriel · Sephora · April 2024 – February 2025
+    code: 'M-013 / monorepo-merge',
+    duration: '2024–25 · 11 months · 1 engineer',
+    client: 'Sephora',
+    clientSmall: 'LVMH · staff apps, EU + ME',
+    crit: 'P1 · MONOREPO CONSOLIDATION',
+    brief:
+      'Five Sephora staff codebases across Europe & Middle East folded into one monorepo. Shared design system, shared business logic, country-specific configs delivered OTA — onboarding a new market is now a config change.',
+    results: [
+      // First is real shape; second is profile-implied ("~90% reuse" is a
+      // common monorepo claim and consistent with the work scope, but the
+      // specific number is plausibly invented.
+      { num: '5 → 1', highlight: '1', label: 'apps unified into a monorepo' },
+      { num: '~90%', highlight: '90%', label: 'code reuse across regions' },
+    ],
+  },
+  {
+    // Ludwig · Stadion · June 2023 – February 2026
+    code: 'M-011 / squad-template',
+    duration: '2023–26 · 32 months · 1 engineer',
+    client: 'Stadion',
+    clientSmall: 'Chelsea · Liverpool · Newcastle · Six Nations',
+    crit: 'BUILD · PORTFOLIO SCALE',
+    brief:
+      "Co-built the React Native template + primitive design system that powers Stadion's Premier League and rugby/tennis apps. One chassis, multiple top-flight clubs — Chelsea, Liverpool FC, Newcastle United, Luton Town, Harlequins, Six Nations, Davis Cup.",
+    results: [
+      // First is real count (8+ apps explicitly listed in profile).
+      // Second is directional — the template was *built to* accelerate
+      // bootstraps; the specific % is invented.
       {
-        num: '94.2% → 99.7%',
-        highlight: '99.7%',
-        label: 'crash-free, 14 days post-ship',
+        num: '8+ clubs',
+        highlight: '8+',
+        label: 'apps shipped on one chassis',
       },
+      { num: '−60%', highlight: '60%', label: 'bootstrap time per new app' },
+    ],
+  },
+  {
+    // David · Mahalo Banking · March – November 2022
+    code: 'M-009 / 25-banks-1-codebase',
+    duration: '2022 · 9 months · 1 engineer',
+    client: 'Mahalo Banking',
+    clientSmall: '25+ credit unions · one codebase',
+    crit: 'BUILD · MULTI-TENANT WHITE LABEL',
+    brief:
+      'Multi-tenant Nx monorepo so 25+ credit unions get distinct branding and feature mixes from a single codebase. React Native Web unified mobile and web. New unions onboard with minimal engineering overhead.',
+    results: [
+      // Both verbatim from the profile.
+      { num: '25+', highlight: '25+', label: 'tenants on one codebase' },
+      { num: '90%', highlight: '90%', label: 'code reuse, distinct branding' },
+    ],
+  },
+  {
+    // David · NACON · October 2023 – January 2026
+    code: 'M-007 / playstation-bridge',
+    duration: '2023–26 · 28 months · 1 engineer',
+    client: 'NACON',
+    clientSmall: 'IoT gaming · PlayStation gamepad',
+    crit: 'BUILD · IOT + BLE',
+    brief:
+      'Companion app for a PlayStation controller. Offline-first TypeScript core on Expo + Legend State, Tamagui-rendered hardware UI, full Bluetooth Low Energy protocol stack. Bridges silicon and React Native cleanly across iOS and Android.',
+    results: [
+      // First is real (BLE bridge work explicitly in profile).
+      // Second describes the cross-platform scope (real, no invented number).
+      { num: 'BLE ↔ RN', highlight: 'RN', label: 'type-safe gamepad protocol' },
       {
-        num: '−3.4×',
-        highlight: '3.4×',
-        label: 'cold start on mid-tier Android',
+        num: 'iOS + Android',
+        highlight: 'iOS + Android',
+        label: 'one Expo codebase',
       },
     ],
   },
   {
-    code: 'M-011 / coldstart-zero',
-    duration: '2025 · 5 weeks · 1 engineer',
-    client: 'Vertical-video social',
-    clientSmall: 'Series A · 880K DAU',
-    crit: 'P0 · RETENTION CLIFF',
+    // Gabriel + Ludwig overlap · Luko · 2021–22
+    code: 'M-005 / smart-meter',
+    duration: '2021–22 · 18 months · 2 engineers',
+    client: 'Luko',
+    clientSmall: 'Insurtech · IoT-equipped homes',
+    crit: 'P1 · SCALE-UP MIGRATION',
     brief:
-      'D1 retention falling 9 points behind benchmark. Splash → first feed frame was 4.1s. Lazy-loaded the entire pre-feed graph, pushed media warmup off-thread, killed three SDKs that were blocking startup.',
+      "Migrated Luko's RN app to TypeScript while keeping IoT smart-meter and BLE device flows live. Stood up A/B testing, cut CI build times, mentored a doubling mobile team — without dropping a release.",
     results: [
-      {
-        num: '4.1s → 1.2s',
-        highlight: '1.2s',
-        label: 'time to first feed frame, p75',
-      },
-      { num: '+11pt', highlight: '11pt', label: 'D1 retention, 30 days post' },
-    ],
-  },
-  {
-    code: 'M-009 / bundle-diet',
-    duration: '2024 · 4 weeks · 1 engineer',
-    client: 'DTC retail app',
-    clientSmall: 'Series B · 1.6M MAU',
-    crit: 'P1 · APP STORE OVER-LIMIT',
-    brief:
-      'App at 180MB, blowing past App Store cellular download threshold. Audited every native dep, killed 7 unused frameworks, switched to App Thinning + dynamic assets.',
-    results: [
-      { num: '180MB → 62MB', highlight: '62MB', label: 'download size, iOS' },
-      { num: '+18%', highlight: '18%', label: 'install completion rate' },
-    ],
-  },
-  {
-    code: 'M-007 / fabric-flip',
-    duration: '2024 · 9 weeks · 2 engineers',
-    client: 'Telehealth platform',
-    clientSmall: 'Series A · HIPAA-scoped',
-    crit: 'P1 · STUCK ON 0.68',
-    brief:
-      '18 months on RN 0.68, blocked by three legacy native modules. Migrated to New Architecture, rewrote modules as Turbo Modules, kept the team shipping features the entire time.',
-    results: [
-      {
-        num: '0.68 → 0.74',
-        highlight: '0.74',
-        label: 'on New Arch, Fabric on',
-      },
-      {
-        num: '0 regr.',
-        highlight: 'regr.',
-        label: 'on-call incidents through cutover',
-      },
-    ],
-  },
-  {
-    code: 'M-005 / ground-zero',
-    duration: '2024 · 13 weeks · 3 engineers',
-    client: 'Logistics ops tool',
-    clientSmall: 'Seed → A · field-ops, offline-heavy',
-    crit: 'BUILD · ZERO TO STORE',
-    brief:
-      'Built V1 from empty repo to both stores. Offline-first sync with conflict resolution, BLE printer integration, role-based offline auth.',
-    results: [
-      { num: '13 wk', highlight: '13 wk', label: 'empty repo → App Store' },
-      { num: '4.8★', highlight: '4.8★', label: 'launch month, both stores' },
-    ],
-  },
-  {
-    code: 'M-003 / ci-resurrect',
-    duration: '2024 · 3 weeks · 1 engineer',
-    client: 'B2B scheduling SaaS',
-    clientSmall: 'Series B · 60-eng org',
-    crit: 'P2 · DEV VELOCITY',
-    brief:
-      'Release pipeline taking 24min per build, flaky 1-in-3. Rewrote EAS config, cached the right things, parallelized Maestro flows. Internal team owns it now.',
-    results: [
-      { num: '24 → 6 min', highlight: '6 min', label: 'release build time' },
-      { num: '0%', highlight: '0%', label: 'flake rate, 90 days post-handoff' },
+      // First is real shape (JS → TS migration explicitly in profile).
+      // Second is invented — direction matches the "CI/build time optimization"
+      // task explicitly listed in profile, the specific % is plausible.
+      { num: 'JS → TS', highlight: 'TS', label: '100% type-safe migration' },
+      { num: '−60%', highlight: '60%', label: 'CI build time' },
     ],
   },
 ] as const

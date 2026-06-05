@@ -18,10 +18,11 @@ export function Hero() {
             </div>
             <div className="flex flex-wrap items-center gap-x-6 gap-y-1 font-mono text-[13px] text-muted">
               <span>
-                <b className="text-ink">5</b> engineers
+                <b className="text-ink">6</b> engineers
               </span>
               <span>
-                <b className="text-ink">11.4M</b> downloads / mo on shipped OSS
+                <b className="text-ink">1.3M+</b> Docker pulls on Twenty (YC
+                S23)
               </span>
               <span>
                 <b className="text-ink">Series A/B</b> only

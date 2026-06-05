@@ -1,78 +1,49 @@
 import { CodeBlock } from '@/components/ui/code-block'
+import { members } from '../data'
+
+// Render deps alphabetically by scope — that's how every package.json reads
+// after `npm install` (and what pnpm/yarn emit too). The truthful order is
+// the joke; an animated shuffle would just be visual noise.
+const SORTED_MEMBERS = [...members].sort((a, b) =>
+  a.scope.localeCompare(b.scope),
+)
 
 export function PackageBlock() {
+  const summary = `Six dependencies: ${SORTED_MEMBERS.map((m) => m.shortName).join(', ')}.`
+
   return (
-    <CodeBlock
-      variant="dark"
-      title={<>~/your-app/package.json</>}
-      status="// 7 deps · 0 vulnerabilities"
-    >
-      <span className="block">
-        <span className="tok-c">{'// the squad mounts together.'}</span>
-      </span>
-      <span className="block">
-        <span className="tok-p">"</span>
-        <span className="tok-k">dependencies</span>
-        <span className="tok-p">"</span>
-        <span className="tok-p">: {'{'}</span>
-      </span>
-      <span className="block pl-4">
-        <span className="tok-p">"</span>
-        <span className="tok-k">@useffect/david</span>
-        <span className="tok-p">"</span>
-        <span className="tok-p">: "</span>
-        <span className="tok-s">^7.3.0</span>
-        <span className="tok-p">",</span>{' '}
-        <span className="tok-c">{'// native modules & bridges'}</span>
-      </span>
-      <span className="block pl-4">
-        <span className="tok-p">"</span>
-        <span className="tok-k">@useffect/gabriel</span>
-        <span className="tok-p">"</span>
-        <span className="tok-p">: "</span>
-        <span className="tok-s">^3.4.0</span>
-        <span className="tok-p">",</span>{' '}
-        <span className="tok-c">{'// analytics & data'}</span>
-      </span>
-      <span className="block pl-4">
-        <span className="tok-p">"</span>
-        <span className="tok-k">@useffect/jeremy</span>
-        <span className="tok-p">"</span>
-        <span className="tok-p">: "</span>
-        <span className="tok-s">^4.9.0</span>
-        <span className="tok-p">",</span>{' '}
-        <span className="tok-c">{'// native modules architect'}</span>
-      </span>
-      <span className="block pl-4">
-        <span className="tok-p">"</span>
-        <span className="tok-k">@useffect/ludwig</span>
-        <span className="tok-p">"</span>
-        <span className="tok-p">: "</span>
-        <span className="tok-s">^8.0.1</span>
-        <span className="tok-p">",</span>{' '}
-        <span className="tok-c">{'// product & strategy'}</span>
-      </span>
-      <span className="block pl-4">
-        <span className="tok-p">"</span>
-        <span className="tok-k">@useffect/matthys</span>
-        <span className="tok-p">"</span>
-        <span className="tok-p">: "</span>
-        <span className="tok-s">^5.8.2</span>
-        <span className="tok-p">",</span>{' '}
-        <span className="tok-c">{'// native + perf'}</span>
-      </span>
-      <span className="block pl-4">
-        <span className="tok-p">"</span>
-        <span className="tok-k">@useffect/pablo</span>
-        <span className="tok-p">"</span>
-        <span className="tok-p">: "</span>
-        <span className="tok-s">^6.1.4</span>
-        <span className="tok-p">",</span>{' '}
-        <span className="tok-c">{'// architecture & new arch'}</span>
-      </span>
-      <span className="block">
-        <span className="tok-p">{'}'}</span>
-      </span>
-    </CodeBlock>
+    <>
+      <span className="sr-only">{summary}</span>
+      <CodeBlock
+        variant="dark"
+        title={<>~/your-app/package.json</>}
+        status={'// 6 deps · 0 vulnerabilities'}
+      >
+        <span className="block">
+          <span className="tok-c">{'// the squad mounts together.'}</span>
+        </span>
+        <span className="block">
+          <span className="tok-p">"</span>
+          <span className="tok-k">dependencies</span>
+          <span className="tok-p">"</span>
+          <span className="tok-p">: {'{'}</span>
+        </span>
+        {SORTED_MEMBERS.map((m) => (
+          <span key={m.id} data-member-id={m.id} className="block pl-4">
+            <span className="tok-p">"</span>
+            <span className="tok-k">{m.scope}</span>
+            <span className="tok-p">"</span>
+            <span className="tok-p">: </span>
+            <span className="tok-p">"</span>
+            <span className="tok-s">{m.version}</span>
+            <span className="tok-p">",</span>{' '}
+            <span className="tok-c">{`// ${m.specialties.join(' · ')}`}</span>
+          </span>
+        ))}
+        <span className="block">
+          <span className="tok-p">{'}'}</span>
+        </span>
+      </CodeBlock>
+    </>
   )
 }
