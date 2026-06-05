@@ -1,65 +1,51 @@
 export interface DoorItem {
   idx: string
-  label: string
-  meta: string
+  /** Item meta — for rescue these stay code-style ("P0", "P1") in both
+   *  locales; for build they are translated (`8–14 wk` ↔ `8–14 sem`). */
+  meta?: string
 }
 
 export interface Door {
+  /** Identifier — also the messages.services.doors.* namespace. */
+  id: 'rescue' | 'build'
+  /** Tag stays code-style (`rescue.ts`, `build.ts`). */
   tag: string
   glyph: string
-  title: string
-  quote: string
-  items: DoorItem[]
-  footPrice: string
   ctaHref: string
-  ctaLabel: string
+  items: DoorItem[]
 }
 
+// Rescue items keep code-style meta (P0/P1/P2). Build items pull the meta
+// from messages.services.doors.build.metas so durations translate ("8–14 wk"
+// → "8–14 sem").
 export const doors: readonly Door[] = [
   {
+    id: 'rescue',
     tag: 'rescue.ts',
     glyph: '!',
-    title: 'Rescue.',
-    quote: '"We unfuck the fucked code."',
-    items: [
-      { idx: '01', label: 'Crashes & ANRs in production', meta: 'P0' },
-      { idx: '02', label: 'Cold start & runtime performance', meta: 'P0' },
-      {
-        idx: '03',
-        label: 'New Architecture migration (Fabric · TM)',
-        meta: 'P1',
-      },
-      { idx: '04', label: 'Bundle size & OTA hygiene', meta: 'P1' },
-      { idx: '05', label: 'Native modules & bridging hell', meta: 'P1' },
-      { idx: '06', label: 'Release pipeline & EAS', meta: 'P2' },
-    ],
-    footPrice: '// engages in 5 business days · 4–10 wk scope',
     ctaHref: '#contact',
-    ctaLabel: 'Trigger rescue',
+    items: [
+      { idx: '01', meta: 'P0' },
+      { idx: '02', meta: 'P0' },
+      { idx: '03', meta: 'P1' },
+      { idx: '04', meta: 'P1' },
+      { idx: '05', meta: 'P1' },
+      { idx: '06', meta: 'P2' },
+    ],
   },
   {
+    id: 'build',
     tag: 'build.ts',
     glyph: '+',
-    title: 'Build.',
-    quote: '"We build the world a better app."',
-    items: [
-      { idx: '01', label: 'MVP & V1 from zero', meta: '8–14 wk' },
-      {
-        idx: '02',
-        label: 'Full rebuilds (legacy → Expo + RN)',
-        meta: '10–20 wk',
-      },
-      { idx: '03', label: 'Design system & component library', meta: '4–8 wk' },
-      {
-        idx: '04',
-        label: 'Native features (BLE · camera · ML)',
-        meta: 'on scope',
-      },
-      { idx: '05', label: 'App Store & Play submission', meta: 'included' },
-      { idx: '06', label: 'Handoff to your internal team', meta: 'included' },
-    ],
-    footPrice: '// kickoff in 2 weeks · fixed-scope phases',
     ctaHref: '#contact',
-    ctaLabel: 'Trigger build',
+    // meta is null here; resolved by the component via messages.
+    items: [
+      { idx: '01' },
+      { idx: '02' },
+      { idx: '03' },
+      { idx: '04' },
+      { idx: '05' },
+      { idx: '06' },
+    ],
   },
 ] as const

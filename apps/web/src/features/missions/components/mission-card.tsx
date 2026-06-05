@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server'
 import type { Mission as MissionData, MissionResult } from '../data'
 
 interface MissionCardProps {
@@ -18,26 +19,25 @@ function NumberWithHighlight({ num, highlight }: MissionResult) {
   )
 }
 
-export function MissionCard({ mission }: MissionCardProps) {
+export async function MissionCard({ mission }: MissionCardProps) {
+  const t = await getTranslations(`missions.list.${mission.id}`)
   return (
     <article className="group relative flex flex-col gap-5 border border-line bg-bg p-8 transition-colors hover:bg-bg-2">
       <header className="flex flex-wrap items-center justify-between gap-2 font-mono text-[12px] text-muted">
         <span className="text-ink">{mission.code}</span>
-        <span>{mission.duration}</span>
+        <span>{t('duration')}</span>
       </header>
       <div className="font-sans text-[20px] text-ink">
         {mission.client}
         <small className="ml-2 font-mono text-[12px] font-normal text-muted">
-          {mission.clientSmall}
+          {t('clientSmall')}
         </small>
       </div>
       <div>
         <span className="inline-block bg-ink px-2 py-1 font-mono text-[11px] text-bg">
-          {mission.crit}
+          {t('crit')}
         </span>
-        <p className="mt-3 text-[15px] leading-[1.55] text-ink">
-          {mission.brief}
-        </p>
+        <p className="mt-3 text-[15px] leading-[1.55] text-ink">{t('brief')}</p>
       </div>
       <dl className="grid grid-cols-2 gap-4 border-t border-line pt-5">
         {mission.results.map((r) => (
@@ -45,7 +45,9 @@ export function MissionCard({ mission }: MissionCardProps) {
             <dt className="font-sans text-[20px]">
               <NumberWithHighlight {...r} />
             </dt>
-            <dd className="font-mono text-[11px] text-muted">{r.label}</dd>
+            <dd className="font-mono text-[11px] text-muted">
+              {t(r.labelKey)}
+            </dd>
           </div>
         ))}
       </dl>

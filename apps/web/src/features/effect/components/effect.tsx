@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { Section } from '@/components/section'
 import { Container } from '@/components/ui/container'
@@ -13,6 +14,7 @@ type State = 'before' | 'after'
 export function Effect() {
   const [state, setState] = useState<State>('after')
   const isAfter = state === 'after'
+  const t = useTranslations('effect')
 
   return (
     <Section id="effect" className="py-[120px]">
@@ -21,12 +23,14 @@ export function Effect() {
           <div className="max-w-[640px]">
             <Eyebrow>{'// before vs. after'}</Eyebrow>
             <h2 className="mt-6 font-sans text-[56px] font-medium leading-[1.05] tracking-[-0.025em] text-ink">
-              The <span className="text-accent">us</span> effect.
+              {t.rich('title', {
+                accent: (chunks) => (
+                  <span className="text-accent">{chunks}</span>
+                ),
+              })}
             </h2>
             <p className="mt-[18px] max-w-[520px] text-[16px] leading-[1.5] text-muted">
-              Every engagement leaves a measurable trace. Same app, same users,
-              same metrics — before we mount, and after we unmount. Median
-              across the last 8 rescues.
+              {t('subtitle')}
             </p>
           </div>
           <EffectToggle onChange={setState} />
@@ -39,20 +43,22 @@ export function Effect() {
           className="mt-16 border-t border-line"
         >
           <div className="grid grid-cols-[1.4fr_1fr_1fr_1fr] gap-4 border-b border-line py-3 font-mono text-[12px] text-muted">
-            <span>{'// metric'}</span>
-            <span>before</span>
-            <span>after</span>
-            <span className="text-right">delta</span>
+            <span>{t('table.metric')}</span>
+            <span>{t('table.before')}</span>
+            <span>{t('table.after')}</span>
+            <span className="text-right">{t('table.delta')}</span>
           </div>
           {metrics.map((m) => (
             <div
-              key={m.name}
+              key={m.id}
               className="grid grid-cols-[1.4fr_1fr_1fr_1fr] items-baseline gap-4 border-b border-line py-5"
             >
               <div className="flex flex-col">
-                <span className="text-[15px] text-ink">{m.name}</span>
+                <span className="text-[15px] text-ink">
+                  {t(`metrics.${m.id}.name`)}
+                </span>
                 <small className="font-mono text-[12px] text-muted">
-                  {m.small}
+                  {t(`metrics.${m.id}.small`)}
                 </small>
               </div>
               <div
@@ -81,14 +87,10 @@ export function Effect() {
         </div>
 
         <div className="mt-8 flex flex-wrap justify-between gap-4 font-mono text-[12px] text-muted">
-          <span>
-            {
-              '// numbers are real, app names redacted under NDA. detailed reports on request.'
-            }
-          </span>
+          <span>{t('footnote.numbers')}</span>
           <span className="inline-flex items-center gap-2">
             <span aria-hidden className="inline-block size-2 bg-accent" />
-            after = post-unmount, ≥30 days in production
+            {t('footnote.afterDef')}
           </span>
         </div>
       </Container>

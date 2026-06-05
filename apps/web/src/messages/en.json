@@ -1,0 +1,266 @@
+{
+  "layout": {
+    "skipToContent": "Skip to content"
+  },
+  "nav": {
+    "links": {
+      "work": "Work",
+      "services": "Services",
+      "team": "Team",
+      "writing": "Writing",
+      "contact": "Contact"
+    },
+    "cta": "Trigger the effect",
+    "statusPill": "2 slots · Q3",
+    "mobile": {
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu",
+      "close": "close ✕",
+      "menuLabel": "Site navigation"
+    }
+  },
+  "hero": {
+    "tagline": "<bold>The React Native team you wish you had.</bold> A senior collective parachuted into apps that are on fire, or apps that need to be built right the first time. Series A/B startups only.",
+    "ctaPrimary": "Trigger the effect",
+    "ctaSecondary": "See renders"
+  },
+  "services": {
+    "title": "Two doors.\nPick the one on fire.",
+    "subtitle": "We don't do retainers, sprints-as-a-service, or \"audits\" that end in a PDF. We do two things, and we do them at the level you can't hire full-time for.",
+    "doors": {
+      "rescue": {
+        "title": "Rescue.",
+        "quote": "\"We unfuck the fucked code.\"",
+        "items": {
+          "01": "Crashes & ANRs in production",
+          "02": "Cold start & runtime performance",
+          "03": "New Architecture migration (Fabric · TM)",
+          "04": "Bundle size & OTA hygiene",
+          "05": "Native modules & bridging hell",
+          "06": "Release pipeline & EAS"
+        },
+        "footPrice": "// engages in 5 business days · 4–10 wk scope",
+        "ctaLabel": "Trigger rescue"
+      },
+      "build": {
+        "title": "Build.",
+        "quote": "\"We build the world a better app.\"",
+        "items": {
+          "01": "MVP & V1 from zero",
+          "02": "Full rebuilds (legacy → Expo + RN)",
+          "03": "Design system & component library",
+          "04": "Native features (BLE · camera · ML)",
+          "05": "App Store & Play submission",
+          "06": "Handoff to your internal team"
+        },
+        "metas": {
+          "01": "8–14 wk",
+          "02": "10–20 wk",
+          "03": "4–8 wk",
+          "04": "on scope",
+          "05": "included",
+          "06": "included"
+        },
+        "footPrice": "// kickoff in 2 weeks · fixed-scope phases",
+        "ctaLabel": "Trigger build"
+      }
+    }
+  },
+  "effect": {
+    "title": "The <accent>us</accent> effect.",
+    "subtitle": "Every engagement leaves a measurable trace. Same app, same users, same metrics — before we mount, and after we unmount. Median across the last 8 rescues.",
+    "toggle": {
+      "before": "before",
+      "after": "after"
+    },
+    "table": {
+      "metric": "// metric",
+      "before": "before",
+      "after": "after",
+      "delta": "delta"
+    },
+    "footnote": {
+      "numbers": "// numbers are real, app names redacted under NDA. detailed reports on request.",
+      "afterDef": "after = post-unmount, ≥30 days in production"
+    },
+    "metrics": {
+      "crashFree": {
+        "name": "Crash-free sessions",
+        "small": "iOS + Android, 30-day"
+      },
+      "coldStart": {
+        "name": "Cold start (p75)",
+        "small": "device median, release build"
+      },
+      "appSize": { "name": "App size", "small": "download size, iOS" },
+      "storeRating": {
+        "name": "Store rating",
+        "small": "30-day rolling, both stores"
+      },
+      "ciBuild": { "name": "CI build time", "small": "EAS · clean cache" },
+      "jsBundle": { "name": "JS bundle", "small": "after Hermes + treeshake" }
+    }
+  },
+  "missions": {
+    "title": "Recent renders.",
+    "subtitle": "Six real engagements from the last four years. Clients you'll recognise, problems we owned, results worth showing.",
+    "list": {
+      "le-chat": {
+        "duration": "2025 · 6 months · 1 engineer",
+        "clientSmall": "Le Chat mobile · Paris LLM lab",
+        "crit": "P1 · LAUNCH VELOCITY",
+        "brief": "Six months of contracted React Native on Le Chat. Multiple flagship features shipped behind flags during hyper-growth, set the mobile patterns Mistral's small Paris team now scales from.",
+        "r1Label": "flagship features, 6 months",
+        "r2Label": "release rollback rate"
+      },
+      "monorepo-merge": {
+        "duration": "2024–25 · 11 months · 1 engineer",
+        "clientSmall": "LVMH · staff apps, EU + ME",
+        "crit": "P1 · MONOREPO CONSOLIDATION",
+        "brief": "Five Sephora staff codebases across Europe & Middle East folded into one monorepo. Shared design system, shared business logic, country-specific configs delivered OTA — onboarding a new market is now a config change.",
+        "r1Label": "apps unified into a monorepo",
+        "r2Label": "code reuse across regions"
+      },
+      "squad-template": {
+        "duration": "2023–26 · 32 months · 1 engineer",
+        "clientSmall": "Chelsea · Liverpool · Newcastle · Six Nations",
+        "crit": "BUILD · PORTFOLIO SCALE",
+        "brief": "Co-built the React Native template + primitive design system that powers Stadion's Premier League and rugby/tennis apps. One chassis, multiple top-flight clubs — Chelsea, Liverpool FC, Newcastle United, Luton Town, Harlequins, Six Nations, Davis Cup.",
+        "r1Label": "apps shipped on one chassis",
+        "r2Label": "bootstrap time per new app"
+      },
+      "25-banks-1-codebase": {
+        "duration": "2022 · 9 months · 1 engineer",
+        "clientSmall": "25+ credit unions · one codebase",
+        "crit": "BUILD · MULTI-TENANT WHITE LABEL",
+        "brief": "Multi-tenant Nx monorepo so 25+ credit unions get distinct branding and feature mixes from a single codebase. React Native Web unified mobile and web. New unions onboard with minimal engineering overhead.",
+        "r1Label": "tenants on one codebase",
+        "r2Label": "code reuse, distinct branding"
+      },
+      "playstation-bridge": {
+        "duration": "2023–26 · 28 months · 1 engineer",
+        "clientSmall": "IoT gaming · PlayStation gamepad",
+        "crit": "BUILD · IOT + BLE",
+        "brief": "Companion app for a PlayStation controller. Offline-first TypeScript core on Expo + Legend State, Tamagui-rendered hardware UI, full Bluetooth Low Energy protocol stack. Bridges silicon and React Native cleanly across iOS and Android.",
+        "r1Label": "type-safe gamepad protocol",
+        "r2Label": "one Expo codebase"
+      },
+      "smart-meter": {
+        "duration": "2021–22 · 18 months · 2 engineers",
+        "clientSmall": "Insurtech · IoT-equipped homes",
+        "crit": "P1 · SCALE-UP MIGRATION",
+        "brief": "Migrated Luko's RN app to TypeScript while keeping IoT smart-meter and BLE device flows live. Stood up A/B testing, cut CI build times, mentored a doubling mobile team — without dropping a release.",
+        "r1Label": "100% type-safe migration",
+        "r2Label": "CI build time"
+      }
+    }
+  },
+  "team": {
+    "title": "The <accent>dependencies.</accent>",
+    "leadStart": "Six senior engineers. Different specialties, different years shipping, same standard.",
+    "leadBold": "No juniors. No subcontractors. No bench.",
+    "leadEnd": "The squad that lands on your project is the squad on this page.",
+    "camera": {
+      "enable": "Enable camera",
+      "initializing": "Initializing…",
+      "blocked": "Camera blocked",
+      "disable": "Disable camera",
+      "hint": "point your finger · the closest tile lights up",
+      "denied": "camera permission denied"
+    }
+  },
+  "process": {
+    "title": "Mount. Ship.\nUnmount.",
+    "subtitle": "The whole engagement is a React lifecycle. We come in clean, do the work, and leave your team stronger than we found it — full docs, zero debt, the bus factor goes up when we go.",
+    "steps": {
+      "mount": {
+        "week": "week 0",
+        "title": "Mount",
+        "body": "We sit with your code for 5 days. Profile it, fork it, break it, read the on-call docs. You get a written diagnosis with the three things that actually matter — not a 40-page audit.",
+        "bullets": [
+          "Repo + crash report ingest",
+          "Live profiling on prod builds",
+          "Written diagnosis (max 3 pages)",
+          "Fixed-scope SOW, signed in week 1"
+        ]
+      },
+      "render": {
+        "week": "weeks 1–N",
+        "title": "Ship",
+        "body": "We ship to your repo, in your branches, in your standups. Weekly demo on Friday. Numbers update on a shared dashboard. No dark rooms. No \"almost done.\"",
+        "bullets": [
+          "PRs in your repo, your review process",
+          "Weekly demo + written progress note",
+          "Live metrics dashboard (the us effect)",
+          "Pair sessions with your engineers"
+        ]
+      },
+      "unmount": {
+        "week": "last 2 weeks",
+        "title": "Unmount",
+        "body": "The hardest part of consulting is leaving cleanly. We write the runbooks, record the loom walkthroughs, train your on-call. If we did our job, you forget our names within a quarter.",
+        "bullets": [
+          "Runbooks + architecture decision records",
+          "Loom walkthroughs for each system",
+          "30-day on-call shadowing, then dark",
+          "90-day return ticket, no charge"
+        ]
+      }
+    }
+  },
+  "community": {
+    "title": "Trace upstream.",
+    "subtitle": "Open source we maintain, bootcamps we run, meetups we organize. The work that isn't a SOW.",
+    "entries": {
+      "twenty": "Early core contributor · 2 years freelance shaping foundational architecture · 224 commits",
+      "expoQuickLook": "Expo module for native file previews — QuickLook on iOS, Intent chooser on Android",
+      "dataDetector": "Cross-platform text data detection — NSDataDetector on iOS, ML Kit Entity Extraction on Android. Detects phones, URLs, emails, dates, addresses.",
+      "humanCoders": "5+ years instructor · 450+ React Native engineers trained · 50+ conference talks",
+      "rnConnection": "Co-organizer · Paris RN meetup · Bordeaux dev meetups · sourcing speakers and sponsors"
+    }
+  },
+  "closer": {
+    "title": "Your app, with the <accent>us</accent> effect.",
+    "body": "Two slots open for Q3. If your app is on fire — or you're staring at an empty repo and a board deadline — talk to us this week.",
+    "cta": "Trigger the effect",
+    "emailLineSuffix": "· avg. response < 6h"
+  },
+  "footer": {
+    "tagline": "A senior React Native collective. We mount, we ship, we unmount cleanly. The us effect is the trace we leave behind.",
+    "copyright": "© 2026 useffect collective · Paris · Bordeaux",
+    "status": "v4.2.0 · last deploy 3 days ago · all systems operational",
+    "columns": {
+      "product": {
+        "links": {
+          "rescue": "Rescue",
+          "build": "Build",
+          "theUsEffect": "The us effect",
+          "renders": "Renders"
+        }
+      },
+      "company": {
+        "links": {
+          "team": "Team",
+          "writing": "Writing",
+          "process": "Process",
+          "contact": "Contact"
+        }
+      },
+      "social": {
+        "links": {
+          "github": "github.com/useffect-sh",
+          "x": "@useffect_sh on X",
+          "linkedin": "useffect-sh on LinkedIn"
+        }
+      },
+      "legal": {
+        "links": {
+          "nda": "NDA template",
+          "msa": "MSA template",
+          "privacy": "Privacy",
+          "imprint": "Imprint"
+        }
+      }
+    }
+  }
+}

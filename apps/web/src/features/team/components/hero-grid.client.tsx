@@ -1,6 +1,7 @@
 'use client'
 
 import type { HandLandmarkerResult } from '@mediapipe/tasks-vision'
+import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { members } from '../data'
 import { useHandTracking } from '../hooks/use-hand-tracking.client'
@@ -393,13 +394,14 @@ export function HeroGrid() {
   }, [])
 
   const tracking = useHandTracking(videoRef, handleResult, cameraEnabled)
+  const t = useTranslations('team.camera')
 
   const buttonLabel = useMemo(() => {
-    if (!cameraEnabled) return 'Enable camera'
-    if (tracking.status === 'loading') return 'Initializing…'
-    if (tracking.status === 'error') return 'Camera blocked'
-    return 'Disable camera'
-  }, [cameraEnabled, tracking.status])
+    if (!cameraEnabled) return t('enable')
+    if (tracking.status === 'loading') return t('initializing')
+    if (tracking.status === 'error') return t('blocked')
+    return t('disable')
+  }, [cameraEnabled, tracking.status, t])
 
   const toggle = useCallback(() => {
     setCameraEnabled((on) => !on)
@@ -515,10 +517,8 @@ export function HeroGrid() {
           {buttonLabel}
         </button>
         <p aria-live="polite" className="font-mono text-[11px] text-dark-muted">
-          {cameraEnabled && tracking.status === 'ready'
-            ? 'point your finger · the closest tile lights up'
-            : null}
-          {tracking.status === 'error' ? 'camera permission denied' : null}
+          {cameraEnabled && tracking.status === 'ready' ? t('hint') : null}
+          {tracking.status === 'error' ? t('denied') : null}
         </p>
       </div>
     </div>

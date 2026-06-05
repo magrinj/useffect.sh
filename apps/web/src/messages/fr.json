@@ -1,0 +1,269 @@
+{
+  "layout": {
+    "skipToContent": "Aller au contenu"
+  },
+  "nav": {
+    "links": {
+      "work": "Missions",
+      "services": "Services",
+      "team": "Équipe",
+      "writing": "Articles",
+      "contact": "Contact"
+    },
+    "cta": "Trigger the effect",
+    "statusPill": "2 slots · Q3",
+    "mobile": {
+      "openMenu": "Ouvrir le menu",
+      "closeMenu": "Fermer le menu",
+      "close": "fermer ✕",
+      "menuLabel": "Navigation du site"
+    }
+  },
+  "hero": {
+    "tagline": "<bold>L'équipe React Native que tu aurais voulu avoir.</bold> Un collectif senior parachuté dans les apps en feu, ou les apps qui doivent être construites bien du premier coup. Startups Series A/B uniquement.",
+    "ctaPrimary": "Trigger the effect",
+    "ctaSecondary": "See renders"
+  },
+  "services": {
+    "title": "Two doors.\nPick the one on fire.",
+    "subtitle": "On ne fait pas de régie, ni de sprints-as-a-service, ni d'audits qui finissent en PDF. On fait deux choses, à un niveau que tu ne peux pas recruter en interne.",
+    "doors": {
+      "rescue": {
+        "title": "Rescue.",
+        "quote": "\"We unfuck the fucked code.\"",
+        "items": {
+          "01": "Crashes & ANR en prod",
+          "02": "Cold start & perf runtime",
+          "03": "Migration New Architecture (Fabric · TM)",
+          "04": "Taille de bundle & hygiène OTA",
+          "05": "Modules natifs & enfer du bridging",
+          "06": "Pipeline de release & EAS"
+        },
+        "footPrice": "// engagement sous 5 jours ouvrés · périmètre 4–10 sem",
+        "ctaLabel": "Trigger rescue"
+      },
+      "build": {
+        "title": "Build.",
+        "quote": "\"We build the world a better app.\"",
+        "items": {
+          "01": "MVP & V1 depuis zéro",
+          "02": "Refontes complètes (legacy → Expo + RN)",
+          "03": "Design system & bibliothèque de composants",
+          "04": "Features natives (BLE · caméra · ML)",
+          "05": "Soumission App Store & Play",
+          "06": "Passation à votre équipe interne"
+        },
+        "metas": {
+          "01": "8–14 sem",
+          "02": "10–20 sem",
+          "03": "4–8 sem",
+          "04": "selon scope",
+          "05": "inclus",
+          "06": "inclus"
+        },
+        "footPrice": "// kickoff sous 2 semaines · phases à périmètre fixe",
+        "ctaLabel": "Trigger build"
+      }
+    }
+  },
+  "effect": {
+    "title": "The <accent>us</accent> effect.",
+    "subtitle": "Chaque engagement laisse une trace mesurable. Même app, mêmes users, mêmes métriques — avant qu'on mount, et après qu'on unmount. Médiane sur les 8 derniers rescues.",
+    "toggle": {
+      "before": "avant",
+      "after": "après"
+    },
+    "table": {
+      "metric": "// métrique",
+      "before": "avant",
+      "after": "après",
+      "delta": "delta"
+    },
+    "footnote": {
+      "numbers": "// chiffres réels, noms d'apps masqués sous NDA. rapports détaillés sur demande.",
+      "afterDef": "après = post-unmount, ≥30 jours en prod"
+    },
+    "metrics": {
+      "crashFree": {
+        "name": "Sessions sans crash",
+        "small": "iOS + Android, 30 jours"
+      },
+      "coldStart": {
+        "name": "Cold start (p75)",
+        "small": "médiane device, build release"
+      },
+      "appSize": {
+        "name": "Taille app",
+        "small": "taille de téléchargement, iOS"
+      },
+      "storeRating": {
+        "name": "Note stores",
+        "small": "30 jours glissants, deux stores"
+      },
+      "ciBuild": { "name": "Temps de build CI", "small": "EAS · cache vide" },
+      "jsBundle": { "name": "Bundle JS", "small": "après Hermes + treeshake" }
+    }
+  },
+  "missions": {
+    "title": "Recent renders.",
+    "subtitle": "Six missions réelles sur les quatre dernières années. Des clients que tu connais, des problèmes qu'on a possédés, des résultats qui valent qu'on les montre.",
+    "list": {
+      "le-chat": {
+        "duration": "2025 · 6 mois · 1 ingénieur",
+        "clientSmall": "Le Chat mobile · labo LLM parisien",
+        "crit": "P1 · LAUNCH VELOCITY",
+        "brief": "Six mois en contrat React Native sur Le Chat. Plusieurs features phares shippées derrière des feature flags pendant l'hyper-croissance, ont posé les patterns mobile que la petite équipe parisienne de Mistral scale aujourd'hui.",
+        "r1Label": "features phares, en 6 mois",
+        "r2Label": "taux de rollback de release"
+      },
+      "monorepo-merge": {
+        "duration": "2024–25 · 11 mois · 1 ingénieur",
+        "clientSmall": "LVMH · apps staff, Europe + Moyen-Orient",
+        "crit": "P1 · CONSOLIDATION MONOREPO",
+        "brief": "Cinq codebases Sephora staff à travers l'Europe et le Moyen-Orient consolidés dans un seul monorepo. Design system mutualisé, business logic partagée, configs spécifiques par pays livrées en OTA — onboarder un nouveau marché est devenu un changement de config.",
+        "r1Label": "apps unifiées dans un monorepo",
+        "r2Label": "réutilisation de code entre régions"
+      },
+      "squad-template": {
+        "duration": "2023–26 · 32 mois · 1 ingénieur",
+        "clientSmall": "Chelsea · Liverpool · Newcastle · Six Nations",
+        "crit": "BUILD · PORTFOLIO SCALE",
+        "brief": "Co-créé le template React Native + design system primitif qui propulse les apps Premier League et rugby/tennis de Stadion. Un seul châssis, plusieurs clubs de l'élite — Chelsea, Liverpool FC, Newcastle United, Luton Town, Harlequins, Six Nations, Davis Cup.",
+        "r1Label": "apps livrées sur un seul châssis",
+        "r2Label": "temps de bootstrap par nouvelle app"
+      },
+      "25-banks-1-codebase": {
+        "duration": "2022 · 9 mois · 1 ingénieur",
+        "clientSmall": "25+ credit unions · une seule codebase",
+        "crit": "BUILD · WHITE LABEL MULTI-TENANT",
+        "brief": "Monorepo Nx multi-tenant pour que 25+ credit unions aient chacun leur branding et leur mix de features depuis une seule codebase. React Native Web a unifié mobile et web. Les nouveaux clients s'onboardent avec un coût d'ingénierie minimal.",
+        "r1Label": "tenants sur une codebase",
+        "r2Label": "réutilisation de code, branding distinct"
+      },
+      "playstation-bridge": {
+        "duration": "2023–26 · 28 mois · 1 ingénieur",
+        "clientSmall": "Gaming IoT · gamepad PlayStation",
+        "crit": "BUILD · IOT + BLE",
+        "brief": "App compagnon pour un contrôleur PlayStation. Core TypeScript offline-first sur Expo + Legend State, UI matériel rendue avec Tamagui, stack BLE complète. Fait le pont entre le silicium et React Native, proprement, sur iOS et Android.",
+        "r1Label": "protocole gamepad type-safe",
+        "r2Label": "une seule codebase Expo"
+      },
+      "smart-meter": {
+        "duration": "2021–22 · 18 mois · 2 ingénieurs",
+        "clientSmall": "Insurtech · maisons équipées IoT",
+        "crit": "P1 · MIGRATION SCALE-UP",
+        "brief": "Migré l'app RN de Luko vers TypeScript tout en gardant les flows IoT smart-meter et BLE vivants. Mis en place l'A/B testing, réduit les temps de build CI, mentoré une équipe mobile qui doublait — sans louper une release.",
+        "r1Label": "migration 100% type-safe",
+        "r2Label": "temps de build CI"
+      }
+    }
+  },
+  "team": {
+    "title": "The <accent>dependencies.</accent>",
+    "leadStart": "Six ingénieurs seniors. Spécialités différentes, années de ship différentes, même standard.",
+    "leadBold": "Pas de juniors. Pas de sous-traitants. Pas de bench.",
+    "leadEnd": "L'équipe qui atterrit sur ton projet est l'équipe sur cette page.",
+    "camera": {
+      "enable": "Activer la caméra",
+      "initializing": "Initialisation…",
+      "blocked": "Caméra bloquée",
+      "disable": "Désactiver la caméra",
+      "hint": "pointe ton doigt · la tuile la plus proche s'allume",
+      "denied": "permission caméra refusée"
+    }
+  },
+  "process": {
+    "title": "Mount. Ship.\nUnmount.",
+    "subtitle": "L'engagement complet est un lifecycle React. On arrive proprement, on fait le boulot, et on laisse ton équipe plus forte qu'on l'a trouvée — docs complets, zéro dette, le bus factor monte quand on part.",
+    "steps": {
+      "mount": {
+        "week": "semaine 0",
+        "title": "Mount",
+        "body": "On vit avec ton code pendant 5 jours. On le profile, on le fork, on le casse, on lit les docs d'astreinte. Tu reçois un diagnostic écrit avec les trois choses qui comptent vraiment — pas un audit de 40 pages.",
+        "bullets": [
+          "Ingestion repo + rapports de crash",
+          "Profiling live sur builds prod",
+          "Diagnostic écrit (3 pages max)",
+          "SOW à périmètre fixe, signé semaine 1"
+        ]
+      },
+      "render": {
+        "week": "semaines 1–N",
+        "title": "Ship",
+        "body": "On ship dans ton repo, sur tes branches, dans tes standups. Démo hebdo le vendredi. Les chiffres remontent sur un dashboard partagé. Pas de salle obscure. Pas de \"presque terminé\".",
+        "bullets": [
+          "PRs dans ton repo, ton process de review",
+          "Démo hebdo + note de progrès écrite",
+          "Dashboard live des métriques (l'us effect)",
+          "Sessions de pair avec tes ingénieurs"
+        ]
+      },
+      "unmount": {
+        "week": "2 dernières semaines",
+        "title": "Unmount",
+        "body": "Le plus dur dans le conseil, c'est de partir proprement. On écrit les runbooks, on enregistre les Loom, on forme ton astreinte. Si on a bien fait notre boulot, tu oublies nos noms en un trimestre.",
+        "bullets": [
+          "Runbooks + ADR (architecture decision records)",
+          "Walkthroughs Loom pour chaque système",
+          "30 jours de shadow astreinte, puis silence",
+          "Ticket retour de 90 jours, gratuit"
+        ]
+      }
+    }
+  },
+  "community": {
+    "title": "Trace upstream.",
+    "subtitle": "Open source qu'on maintient, bootcamps qu'on anime, meetups qu'on organise. Le boulot qui n'est pas un SOW.",
+    "entries": {
+      "twenty": "Early core contributor · 2 ans freelance à shaper l'architecture fondamentale · 224 commits",
+      "expoQuickLook": "Module Expo pour les previews de fichiers natifs — QuickLook sur iOS, Intent chooser sur Android",
+      "dataDetector": "Détection de données dans le texte, cross-platform — NSDataDetector sur iOS, ML Kit Entity Extraction sur Android. Détecte numéros, URLs, emails, dates, adresses.",
+      "humanCoders": "5+ années d'enseignement · 450+ ingénieurs React Native formés · 50+ talks en conférence",
+      "rnConnection": "Co-organisateur · meetup RN Paris · meetups dev Bordeaux · sourcing speakers et sponsors"
+    }
+  },
+  "closer": {
+    "title": "Your app, with the <accent>us</accent> effect.",
+    "body": "Deux slots ouverts pour le Q3. Si ton app est en feu — ou si tu fixes un repo vide avec une deadline board — parle-nous cette semaine.",
+    "cta": "Trigger the effect",
+    "emailLineSuffix": "· réponse moy. < 6h"
+  },
+  "footer": {
+    "tagline": "Un collectif React Native senior. On mount, on ship, on unmount proprement. L'us effect est la trace qu'on laisse.",
+    "copyright": "© 2026 useffect collective · Paris · Bordeaux",
+    "status": "v4.2.0 · dernier déploiement il y a 3 jours · tous systèmes opérationnels",
+    "columns": {
+      "product": {
+        "links": {
+          "rescue": "Rescue",
+          "build": "Build",
+          "theUsEffect": "L'us effect",
+          "renders": "Rendus"
+        }
+      },
+      "company": {
+        "links": {
+          "team": "Équipe",
+          "writing": "Articles",
+          "process": "Process",
+          "contact": "Contact"
+        }
+      },
+      "social": {
+        "links": {
+          "github": "github.com/useffect-sh",
+          "x": "@useffect_sh sur X",
+          "linkedin": "useffect-sh sur LinkedIn"
+        }
+      },
+      "legal": {
+        "links": {
+          "nda": "Modèle de NDA",
+          "msa": "Modèle de MSA",
+          "privacy": "Confidentialité",
+          "imprint": "Mentions légales"
+        }
+      }
+    }
+  }
+}

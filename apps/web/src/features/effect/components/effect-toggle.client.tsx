@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { type KeyboardEvent, useRef, useState } from 'react'
 import { cn } from '@/lib/cn'
 
@@ -14,6 +15,7 @@ const STATES: readonly State[] = ['before', 'after'] as const
 
 export function EffectToggle({ onChange }: EffectToggleProps) {
   const [state, setState] = useState<State>('after')
+  const t = useTranslations('effect.toggle')
   const tabsRef = useRef<Record<State, HTMLButtonElement | null>>({
     before: null,
     after: null,
@@ -41,7 +43,7 @@ export function EffectToggle({ onChange }: EffectToggleProps) {
     <div
       className="inline-flex border border-line font-mono text-[12px]"
       role="tablist"
-      aria-label="before vs after"
+      aria-label={`${t('before')} vs ${t('after')}`}
     >
       {STATES.map((s) => {
         const selected = state === s
@@ -64,7 +66,7 @@ export function EffectToggle({ onChange }: EffectToggleProps) {
               selected ? 'bg-ink text-bg' : 'text-muted hover:text-ink',
             )}
           >
-            {s}
+            {t(s)}
           </button>
         )
       })}

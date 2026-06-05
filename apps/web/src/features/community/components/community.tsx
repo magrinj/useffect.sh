@@ -1,9 +1,11 @@
+import { getTranslations } from 'next-intl/server'
 import { Section } from '@/components/section'
 import { Container } from '@/components/ui/container'
 import { Eyebrow } from '@/components/ui/eyebrow'
 import { community } from '../data'
 
-export function Community() {
+export async function Community() {
+  const t = await getTranslations('community')
   return (
     <Section id="community" className="py-[96px]">
       <Container>
@@ -11,20 +13,16 @@ export function Community() {
           <div>
             <Eyebrow>{'// community.log'}</Eyebrow>
             <h2 className="mt-6 font-sans text-[44px] font-medium leading-[1.05] tracking-[-0.025em] text-ink">
-              Trace upstream.
+              {t('title')}
             </h2>
             <p className="mt-5 max-w-[420px] text-[15px] leading-[1.55] text-muted">
-              Open source we maintain, bootcamps we run, meetups we organize.
-              The work that isn't a SOW.
+              {t('subtitle')}
             </p>
           </div>
 
           <ul className="divide-y divide-line border-t border-line">
             {community.map((c) => (
-              <li
-                key={`${c.person}-${c.title}`}
-                className="flex flex-col gap-2 py-5"
-              >
+              <li key={c.id} className="flex flex-col gap-2 py-5">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                   <div className="font-mono text-[14px] text-ink">
                     <span className="text-muted">{c.person}</span>
@@ -49,7 +47,7 @@ export function Community() {
                   )}
                 </div>
                 <p className="text-[14px] leading-[1.55] text-muted">
-                  {c.detail}
+                  {t(`entries.${c.id}`)}
                 </p>
               </li>
             ))}

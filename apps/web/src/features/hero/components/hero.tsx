@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server'
 import { Button } from '@/components/ui/button'
 import { Comment } from '@/components/ui/comment'
 import { Container } from '@/components/ui/container'
@@ -6,7 +7,8 @@ import { HeroBelt } from './hero-belt'
 import { HeroHeadline } from './hero-headline'
 import { HeroTerminal } from './hero-terminal'
 
-export function Hero() {
+export async function Hero() {
+  const t = await getTranslations('hero')
   return (
     <section className="border-b border-line py-[88px] pb-[120px]">
       <Container>
@@ -35,17 +37,16 @@ export function Hero() {
           <div className="mt-4 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-start">
             <div className="flex flex-col gap-8">
               <p className="text-[18px] leading-[1.5] text-ink">
-                <b>The React Native team you wish you had.</b> A senior
-                collective parachuted into apps that are on fire, or apps that
-                need to be built right the first time. Series&nbsp;A/B startups
-                only.
+                {t.rich('tagline', {
+                  bold: (chunks) => <b>{chunks}</b>,
+                })}
               </p>
               <div className="flex flex-wrap items-center gap-4">
                 <Button href="#contact" size="lg">
-                  Trigger the effect
+                  {t('ctaPrimary')}
                 </Button>
                 <Button href="#work" size="lg" variant="ghost">
-                  See renders
+                  {t('ctaSecondary')}
                 </Button>
                 <Comment>{'// avg. response < 6h, Mon–Fri'}</Comment>
               </div>
